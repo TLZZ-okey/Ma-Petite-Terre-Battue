@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Thème Roland Garros */
+@layer base {
+  :root {
+    --ocre: #F5A623;
+    --ocre-light: #F8C471;
+    --ocre-dark: #E69500;
+    --vert: #00A651;
+    --vert-light: #00C851;
+    --vert-dark: #008A42;
+    --blanc: #FFFFFF;
+    --gris: #F8F4E8;
+    --texte: #333333;
+    --texte-secondaire: #666666;
+  }
+}
+
+/* Styles globaux */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--gris);
+  color: var(--texte);
+}
+
+/* Barre de navigation */
+.navbar {
+  background-color: var(--blanc);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Cartes */
+.card {
+  background-color: var(--blanc);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Boutons */
+.btn-primary {
+  background-color: var(--ocre);
+  color: var(--blanc);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--ocre-dark);
+}
+
+.btn-secondary {
+  background-color: var(--vert);
+  color: var(--blanc);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--vert-dark);
+}
+
+.btn-danger {
+  background-color: #FF4444;
+  color: var(--blanc);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #CC0000;
+}
+
+/* Tableau des scores */
+.leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--blanc);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard th,
+.leaderboard td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #EEEEEE;
+}
+
+.leaderboard th {
+  background-color: var(--ocre);
+  color: var(--blanc);
+  font-weight: 600;
+}
+
+.leaderboard tr:hover {
+  background-color: #FAFAFA;
+}
+
+/* Formulaires */
+.input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #DDDDDD;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--ocre);
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-ocre {
+  background-color: var(--ocre);
+  color: var(--blanc);
+}
+
+.badge-vert {
+  background-color: var(--vert);
+  color: var(--blanc);
+}
+
+.badge-gris {
+  background-color: #999999;
+  color: var(--blanc);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .leaderboard th,
+  .leaderboard td {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
