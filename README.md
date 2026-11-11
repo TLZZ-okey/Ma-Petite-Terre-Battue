@@ -7,7 +7,9 @@ Application web (PWA) de pronostics tennis entre amis, inspirée de *Mon Petit P
 
 Pour chaque match, le joueur saisit le **score en sets** : le nombre de sets gagnés par chacun des deux joueurs
 (ex. 2-0, 2-1, 1-2, 0-2 en 2 sets gagnants ; 3-0, 3-1, 3-2… en Grand Chelem masculin). Sous chaque case, l'app affiche
-les points que rapporte ce joueur s'il gagne : **cote × 100** (cote 1,47 → 147 pts, cote 2,64 → 264 pts).
+les points que rapporte ce joueur s'il gagne (calculés comme **cote × 100** : cote 1,47 → 147 pts ; la cote
+elle-même n'est pas affichée). Le prono est **enregistré automatiquement** dès que le score saisi est cohérent ;
+vider les deux cases retire le prono.
 
 | Pronostic | Points |
 | --- | --- |
@@ -16,8 +18,8 @@ les points que rapporte ce joueur s'il gagne : **cote × 100** (cote 1,47 → 14
 | Bon vainqueur **et** score en sets exact | **le double** (1,47 → 294 pts) |
 
 - Le score saisi doit être cohérent : un seul vainqueur, qui remporte exactement le nombre de sets requis
-  (impossible de saisir 2-2, 1-1 ou 3-0 dans un match en 2 sets gagnants). Sinon le bouton « Valider » reste bloqué et
-  l'erreur est expliquée.
+  (impossible de saisir 2-2, 1-1 ou 3-0 dans un match en 2 sets gagnants). Sinon rien n'est enregistré et l'erreur
+  est affichée sous les cases.
 - On peut modifier ou retirer son prono jusqu'au début du match ; ensuite il est verrouillé.
 - Classement : points, puis nombre de scores exacts, puis nombre de bons vainqueurs.
 
@@ -62,7 +64,7 @@ Avec Docker : `docker compose up --build`.
 app/
   connexion/            connexion / création de compte local
   (app)/matchs/         programme du jour, cotes, saisie des pronos
-  (app)/pronos/         mes pronos (à venir, terminés) + statistiques
+  (app)/pronos/         tous les matchs à venir (avec ou sans prono) et terminés (score + résultat du prono)
   (app)/classement/     podium et classement
   (app)/profil/         profil, règles, outils de démo, déconnexion
   manifest.ts           manifeste PWA
