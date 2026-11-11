@@ -24,7 +24,7 @@ export function DayPicker({ now, value, onChange, counts = {}, before = 3, after
   }, [value]);
 
   return (
-    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-4 pb-3">
+    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-4 pb-3 md:px-0">
       {days.map((d) => {
         const key = dayKey(d);
         const selected = key === value;

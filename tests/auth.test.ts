@@ -49,8 +49,8 @@ describe("classement", () => {
 
     const board = buildLeaderboard(await repo.listUsers(), await repo.listPredictions(), new Map([[m.id, match]]));
     expect(board.map((e) => [e.user.username, e.points, e.rank])).toEqual([
-      ["bruno", 3, 1],
-      ["alice", 1.5, 2],
+      ["bruno", 300, 1],
+      ["alice", 150, 2],
       ["chloe", 0, 3],
     ]);
   });

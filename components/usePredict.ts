@@ -27,7 +27,7 @@ export function usePredict() {
         const error = validatePrediction(fresh, winnerId, sets);
         if (error) throw new Error(error);
         await repo.savePrediction({ userId: user.id, matchId: match.id, winnerId, sets });
-        toast.show(sets ? `Prono enregistré : ${sets} sets` : "Prono enregistré ✓");
+        toast.show("Prono enregistré ✓");
       }
     } catch (e) {
       toast.show(e instanceof Error ? e.message : "Erreur", "error");

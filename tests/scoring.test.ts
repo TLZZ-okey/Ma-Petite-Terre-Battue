@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { generateDay, resolveMatch } from "../lib/mock/generator";
-import { potentialPoints, possibleSets, scorePrediction } from "../lib/scoring";
+import {
+  potentialPoints,
+  possibleSets,
+  predictionFromScore,
+  scoreFromPrediction,
+  scorePrediction,
+  validateSetScore,
+} from "../lib/scoring";
 import type { MatchState } from "../lib/types";
 
 const base = generateDay("2026-11-09")[0];
@@ -17,13 +24,13 @@ describe("scorePrediction", () => {
     expect(scorePrediction(finished(p1, 2), { winnerId: p2, sets: 2 })).toEqual({ outcome: "lost", points: 0 });
   });
 
-  it("donne la cote du vainqueur pour un bon vainqueur", () => {
-    expect(scorePrediction(finished(p1, 3), { winnerId: p1, sets: null })).toEqual({ outcome: "won", points: 1.8 });
-    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 2 })).toEqual({ outcome: "won", points: 2.1 });
+  it("donne la cote × 100 pour un bon vainqueur", () => {
+    expect(scorePrediction(finished(p1, 3), { winnerId: p1, sets: null })).toEqual({ outcome: "won", points: 180 });
+    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 2 })).toEqual({ outcome: "won", points: 210 });
   });
 
-  it("double la cote si le nombre de sets est exact", () => {
-    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 3 })).toEqual({ outcome: "perfect", points: 4.2 });
+  it("double les points si le score en sets est exact", () => {
+    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 3 })).toEqual({ outcome: "perfect", points: 420 });
   });
 
   it("reste en attente tant que le match n'est pas terminé", () => {
@@ -32,15 +39,42 @@ describe("scorePrediction", () => {
   });
 
   it("calcule les gains potentiels", () => {
-    expect(potentialPoints({ ...base, odds1: 1.55, odds2: 2.4 }, { winnerId: p1, sets: 2 })).toEqual({
-      winner: 1.55,
-      exact: 3.1,
+    expect(potentialPoints({ ...base, odds1: 1.47, odds2: 2.64 }, { winnerId: p1, sets: 2 })).toEqual({
+      winner: 147,
+      exact: 294,
+    });
+    expect(potentialPoints({ ...base, odds1: 1.47, odds2: 2.64 }, { winnerId: p2, sets: null })).toEqual({
+      winner: 264,
+      exact: null,
     });
   });
 
   it("propose les bons nombres de sets", () => {
     expect(possibleSets(3)).toEqual([2, 3]);
     expect(possibleSets(5)).toEqual([3, 4, 5]);
+  });
+});
+
+describe("score en sets", () => {
+  it("accepte uniquement les scores cohérents en 2 sets gagnants", () => {
+    for (const ok of [[2, 0], [2, 1], [0, 2], [1, 2]] as const) expect(validateSetScore(3, [...ok])).toBeNull();
+    for (const ko of [[2, 2], [1, 1], [0, 0], [3, 0], [1, 0], [2, null], [-1, 2], [1.5, 2]] as const) {
+      expect(validateSetScore(3, [...ko])).not.toBeNull();
+    }
+  });
+
+  it("accepte uniquement les scores cohérents en 3 sets gagnants", () => {
+    for (const ok of [[3, 0], [3, 1], [3, 2], [2, 3]] as const) expect(validateSetScore(5, [...ok])).toBeNull();
+    for (const ko of [[3, 3], [2, 2], [4, 1], [2, 1]] as const) expect(validateSetScore(5, [...ko])).not.toBeNull();
+  });
+
+  it("convertit un score en pronostic et inversement", () => {
+    const m5 = { ...base, bestOf: 5 as const };
+    expect(predictionFromScore(base, [1, 2])).toEqual({ winnerId: base.player2.id, sets: 3 });
+    expect(predictionFromScore(base, [2, 0])).toEqual({ winnerId: base.player1.id, sets: 2 });
+    expect(scoreFromPrediction(base, { winnerId: base.player2.id, sets: 3 })).toEqual([1, 2]);
+    expect(scoreFromPrediction(m5, { winnerId: base.player1.id, sets: 4 })).toEqual([3, 1]);
+    expect(scoreFromPrediction(base, { winnerId: base.player1.id, sets: null })).toBeNull();
   });
 });
 

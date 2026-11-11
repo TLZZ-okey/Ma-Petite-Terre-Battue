@@ -43,18 +43,24 @@ export default function ConnexionPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-rg">
-      <div className="clay-court pt-safe relative flex h-64 flex-col items-center justify-center text-white">
-        <div className="rounded-full bg-white/10 p-2 backdrop-blur-sm">
+    <div className="flex min-h-dvh flex-col bg-rg lg:flex-row">
+      <div className="clay-court pt-safe relative flex h-64 flex-col items-center justify-center text-white lg:h-auto lg:flex-1">
+        <div className="rounded-full bg-white/10 p-2 backdrop-blur-sm lg:mb-8 lg:scale-150">
           <Logo size={76} />
         </div>
-        <h1 className="mt-3 text-center text-2xl font-black tracking-wide uppercase drop-shadow">
+        <h1 className="mt-3 text-center text-2xl lg:text-4xl font-black tracking-wide uppercase drop-shadow">
           Ma Petite Terre Battue
         </h1>
         <p className="text-sm font-medium text-white/90 drop-shadow">Pronostics tennis entre amis</p>
+        <ul className="mt-8 hidden max-w-md space-y-2 rounded-2xl bg-rg/85 px-6 py-5 text-sm shadow-lg lg:block">
+          <li>🎾 Pronostique le score en sets de chaque match</li>
+          <li>💰 Bon vainqueur : la cote × 100 en points</li>
+          <li>🏆 Score exact : points doublés</li>
+          <li>📊 Grimpe au classement face à tes amis</li>
+        </ul>
       </div>
 
-      <div className="-mt-6 flex flex-1 flex-col rounded-t-3xl bg-cream px-5 pt-6 pb-10">
+      <div className="-mt-6 flex flex-1 flex-col rounded-t-3xl bg-cream px-5 pt-6 pb-10 lg:mt-0 lg:w-[480px] lg:flex-none lg:justify-center lg:rounded-none lg:px-12 lg:shadow-2xl">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-5 grid grid-cols-2 rounded-full bg-sand p-1" role="tablist">
             {(["login", "register"] as const).map((m) => (

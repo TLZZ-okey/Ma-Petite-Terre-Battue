@@ -34,14 +34,14 @@ export default function PronosPage() {
   return (
     <div>
       <PageTitle title="Mes pronos" subtitle="Suis tes pronostics et tes points" />
-      <div className="grid grid-cols-4 gap-2 px-4">
+      <div className="grid grid-cols-4 gap-2 px-4 md:gap-4 md:px-0">
         <StatTile label="Points" value={formatPoints(stats?.points ?? 0)} accent="text-clay" />
         <StatTile label="Pronos" value={String(stats?.total ?? 0)} />
         <StatTile label="Réussite" value={`${successRate}%`} />
-        <StatTile label="Sets exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
+        <StatTile label="Scores exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
       </div>
 
-      <div className="mx-4 mt-4 grid grid-cols-2 rounded-full bg-sand p-1" role="tablist">
+      <div className="mx-4 mt-4 grid grid-cols-2 rounded-full bg-sand p-1 md:mx-0 md:mt-6 md:max-w-md" role="tablist">
         {(
           [
             ["pending", "À venir & en cours"],
@@ -62,11 +62,11 @@ export default function PronosPage() {
         ))}
       </div>
 
-      <div className="space-y-3 p-4">
+      <div className="grid gap-3 p-4 md:grid-cols-2 md:gap-4 md:px-0 md:pt-6">
         {loading && !data ? (
-          <div className="h-48 animate-pulse rounded-2xl bg-white/70" />
+          <div className="h-48 animate-pulse rounded-2xl bg-white/70 md:col-span-2" />
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-clay/40 bg-white p-8 text-center">
+          <div className="rounded-2xl border border-dashed border-clay/40 bg-white p-8 text-center md:col-span-2">
             <p className="text-3xl">🎾</p>
             <p className="mt-2 font-bold text-rg-dark">
               {tab === "pending" ? "Aucun prono en attente" : "Aucun prono terminé pour l'instant"}
