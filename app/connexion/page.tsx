@@ -54,7 +54,7 @@ export default function ConnexionPage() {
         <p className="text-sm font-medium text-white/90 drop-shadow">Pronostics tennis entre amis</p>
         <ul className="mt-8 hidden max-w-md space-y-2 rounded-2xl bg-rg/85 px-6 py-5 text-sm shadow-lg lg:block">
           <li>🎾 Pronostique le score en sets de chaque match</li>
-          <li>💰 Bon vainqueur : la cote × 100 en points</li>
+          <li>💰 Bon vainqueur : tu gagnes les points affichés sous le joueur</li>
           <li>🏆 Score exact : points doublés</li>
           <li>📊 Grimpe au classement face à tes amis</li>
         </ul>
