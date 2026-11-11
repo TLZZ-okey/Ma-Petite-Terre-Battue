@@ -1,179 +1,69 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Thème Roland Garros */
-@layer base {
-  :root {
-    --ocre: #F5A623;
-    --ocre-light: #F8C471;
-    --ocre-dark: #E69500;
-    --vert: #00A651;
-    --vert-light: #00C851;
-    --vert-dark: #008A42;
-    --blanc: #FFFFFF;
-    --gris: #F8F4E8;
-    --texte: #333333;
-    --texte-secondaire: #666666;
+/*
+ * Charte « Roland-Garros » : vert profond, terre battue, blanc des lignes,
+ * jaune de la balle et crème des tribunes.
+ */
+@theme {
+  --color-rg: #0b5b43;
+  --color-rg-dark: #063d2d;
+  --color-rg-light: #e1efe8;
+  --color-clay: #c8541e;
+  --color-clay-dark: #a3411a;
+  --color-clay-light: #e9875a;
+  --color-clay-50: #fbede5;
+  --color-cream: #f6f0e8;
+  --color-sand: #ece2d4;
+  --color-ink: #1d2a24;
+  --color-muted: #6b7a72;
+  --color-ball: #dce85a;
+  --color-gold: #d9a21b;
+  --color-silver: #a7b0b5;
+  --color-bronze: #b8743d;
+  --color-live: #d7263d;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+
+  --animate-pop: pop 0.25s ease-out;
+  @keyframes pop {
+    0% { transform: scale(0.94); }
+    60% { transform: scale(1.04); }
+    100% { transform: scale(1); }
   }
 }
 
-/* Styles globaux */
+:root {
+  color-scheme: light;
+}
+
+html,
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: var(--gris);
-  color: var(--texte);
+  background: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Barre de navigation */
-.navbar {
-  background-color: var(--blanc);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Texture de court en terre battue (lignes blanches) */
+.clay-court {
+  background-color: var(--color-clay);
+  background-image:
+    linear-gradient(90deg, transparent 6%, rgba(255, 255, 255, 0.8) 6%, rgba(255, 255, 255, 0.8) calc(6% + 3px), transparent calc(6% + 3px), transparent calc(94% - 3px), rgba(255, 255, 255, 0.8) calc(94% - 3px), rgba(255, 255, 255, 0.8) 94%, transparent 94%),
+    linear-gradient(transparent 8%, rgba(255, 255, 255, 0.8) 8%, rgba(255, 255, 255, 0.8) calc(8% + 3px), transparent calc(8% + 3px)),
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0 2px, transparent 2px 6px);
 }
 
-/* Cartes */
-.card {
-  background-color: var(--blanc);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
-
-/* Boutons */
-.btn-primary {
-  background-color: var(--ocre);
-  color: var(--blanc);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: var(--ocre-dark);
-}
-
-.btn-secondary {
-  background-color: var(--vert);
-  color: var(--blanc);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: var(--vert-dark);
-}
-
-.btn-danger {
-  background-color: #FF4444;
-  color: var(--blanc);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-
-.btn-danger:hover {
-  background-color: #CC0000;
-}
-
-/* Tableau des scores */
-.leaderboard {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--blanc);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.leaderboard th,
-.leaderboard td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #EEEEEE;
-}
-
-.leaderboard th {
-  background-color: var(--ocre);
-  color: var(--blanc);
-  font-weight: 600;
-}
-
-.leaderboard tr:hover {
-  background-color: #FAFAFA;
-}
-
-/* Formulaires */
-.input-field {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #DDDDDD;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--ocre);
-}
-
-/* Badges */
-.badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.badge-ocre {
-  background-color: var(--ocre);
-  color: var(--blanc);
-}
-
-.badge-vert {
-  background-color: var(--vert);
-  color: var(--blanc);
-}
-
-.badge-gris {
-  background-color: #999999;
-  color: var(--blanc);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .leaderboard th,
-  .leaderboard td {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
 }

@@ -1,37 +1,38 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { AppProvider } from "@/components/AppProvider";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
-import Navbar from "@/components/Navbar";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tennis Prono - Pronostics de Tennis",
-  description: "Faites vos pronostics sur les matchs de tennis et gagnez des points !",
-  manifest: "/manifest.json",
+  title: {
+    default: "Ma Petite Terre Battue",
+    template: "%s · Ma Petite Terre Battue",
+  },
+  description: "Pronostique les matchs de tennis entre amis : vainqueur, nombre de sets et classement.",
+  applicationName: "Ma Petite Terre Battue",
+  appleWebApp: {
+    capable: true,
+    title: "Terre Battue",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F5A623",
+  themeColor: "#0b5b43",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
-        <AuthProvider>
-          <Navbar />
-          <main className="pt-20 min-h-screen bg-gris-50 p-4">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
-        </AuthProvider>
+      <body className="min-h-dvh font-sans antialiased">
+        <AppProvider>{children}</AppProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
