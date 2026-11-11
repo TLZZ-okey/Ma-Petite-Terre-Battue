@@ -1,8 +1,16 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { SURFACE_LABELS } from "@/lib/data/tournaments";
-import { flag, formatOdds, formatTime, pts, shortName } from "@/lib/format";
-import { possibleSets, potentialPoints, scorePrediction } from "@/lib/scoring";
+import { flag, formatOdds, formatPoints, formatTime, pts, shortName } from "@/lib/format";
+import {
+  oddsToPoints,
+  predictionFromScore,
+  scoreFromPrediction,
+  scorePrediction,
+  setsToWin,
+  validateSetScore,
+} from "@/lib/scoring";
 import type { MatchState, Player, Prediction } from "@/lib/types";
 import { CheckIcon, ClockIcon, LockIcon } from "./icons";
 
@@ -16,25 +24,62 @@ interface MatchCardProps {
   showContext?: boolean;
 }
 
-export function MatchCard({ match, prediction, busy, onPredict, showContext }: MatchCardProps) {
+type Draft = [number | null, number | null];
+
+function draftFromPrediction(match: MatchState, prediction?: Prediction): Draft {
+  if (!prediction) return [null, null];
+  const score = scoreFromPrediction(match, prediction);
+  if (score) return score;
+  // Ancien prono sans nombre de sets : on pré-remplit le vainqueur.
+  const need = setsToWin(match.bestOf);
+  return prediction.winnerId === match.player1.id ? [need, null] : [null, need];
+}
+
+export function MatchCard(props: MatchCardProps) {
+  // La clé réinitialise le brouillon quand le prono enregistré change.
+  const key = `${props.match.id}:${props.prediction?.updatedAt ?? "none"}`;
+  return <MatchCardInner key={key} {...props} />;
+}
+
+function MatchCardInner({ match, prediction, busy, onPredict, showContext }: MatchCardProps) {
   const open = match.status === "upcoming" && !!onPredict;
-  const score = prediction ? scorePrediction(match, prediction) : null;
+  const saved = draftFromPrediction(match, prediction);
+  const [draft, setDraft] = useState<Draft>(saved);
+  const [touched, setTouched] = useState(false);
+
+  const complete = draft[0] !== null && draft[1] !== null;
+  const error = complete || touched ? validateSetScore(match.bestOf, draft) : null;
+  const valid = complete && !error;
+  const dirty = draft[0] !== saved[0] || draft[1] !== saved[1];
+  const draftWinner = valid ? predictionFromScore(match, draft as [number, number]).winnerId : undefined;
+  const shownWinner = open ? draftWinner : prediction?.winnerId;
+
+  const result = prediction ? scorePrediction(match, prediction) : null;
   const winnerId = match.result?.winnerId;
+  const need = setsToWin(match.bestOf);
 
-  function chooseWinner(playerId: string) {
-    if (!open || busy) return;
-    if (prediction?.winnerId === playerId) onPredict!(null, null);
-    else onPredict!(playerId, prediction?.sets ?? null);
+  function update(index: 0 | 1, raw: string) {
+    const digits = raw.replace(/\D/g, "").slice(-1);
+    const value = digits === "" ? null : Number(digits);
+    setDraft((d) => (index === 0 ? [value, d[1]] : [d[0], value]));
   }
 
-  function chooseSets(sets: number) {
-    if (!open || busy || !prediction) return;
-    onPredict!(prediction.winnerId, prediction.sets === sets ? null : sets);
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    setTouched(true);
+    if (!open || busy || !valid) return;
+    const p = predictionFromScore(match, draft as [number, number]);
+    onPredict!(p.winnerId, p.sets);
   }
+
+  const sides = [
+    { player: match.player1, odds: match.odds1, index: 0 as const },
+    { player: match.player2, odds: match.odds2, index: 1 as const },
+  ];
 
   return (
     <article
-      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+      className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md ${
         prediction && match.status === "upcoming" ? "border-clay/40" : "border-sand"
       }`}
     >
@@ -42,9 +87,7 @@ export function MatchCard({ match, prediction, busy, onPredict, showContext }: M
         <ClockIcon width={14} height={14} />
         <span className="font-semibold text-ink">
           {showContext
-            ? new Date(match.startTime).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }) +
-              " · " +
-              formatTime(match.startTime)
+            ? `${new Date(match.startTime).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })} · ${formatTime(match.startTime)}`
             : formatTime(match.startTime)}
         </span>
         <span aria-hidden>·</span>
@@ -59,67 +102,115 @@ export function MatchCard({ match, prediction, busy, onPredict, showContext }: M
         </p>
       )}
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 pt-3 pb-2">
-        <PlayerBlock player={match.player1} winner={winnerId} />
-        <Center match={match} />
-        <PlayerBlock player={match.player2} winner={winnerId} />
-      </div>
+      <form onSubmit={submit} className="flex flex-1 flex-col">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-2 px-4 pt-3">
+          <PlayerBlock player={match.player1} winner={winnerId} />
+          <Center match={match} />
+          <PlayerBlock player={match.player2} winner={winnerId} />
 
-      <div className="grid grid-cols-2 gap-2 px-4">
-        {[
-          { player: match.player1, odds: match.odds1 },
-          { player: match.player2, odds: match.odds2 },
-        ].map(({ player, odds }) => (
-          <OddsButton
-            key={player.id}
-            odds={odds}
-            selected={prediction?.winnerId === player.id}
-            open={open}
-            correct={winnerId ? winnerId === player.id : undefined}
-            disabled={busy}
-            onClick={() => chooseWinner(player.id)}
-            label={`Pronostiquer la victoire de ${player.name}`}
-          />
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 px-4 pt-3">
-        <span className="text-xs font-bold tracking-wide text-muted uppercase">Sets</span>
-        <div className="flex gap-1.5">
-          {possibleSets(match.bestOf).map((n) => {
-            const selected = prediction?.sets === n;
-            const actual = match.result?.sets === n;
-            return (
-              <button
-                key={n}
-                type="button"
-                onClick={() => chooseSets(n)}
-                disabled={!open || !prediction || busy}
-                aria-pressed={selected}
-                className={`h-8 min-w-11 rounded-full px-3 text-sm font-bold transition ${
-                  selected
-                    ? match.status === "finished"
-                      ? actual
-                        ? "bg-gold text-white"
-                        : "bg-sand text-muted line-through"
-                      : "animate-pop bg-rg text-white shadow"
-                    : actual
-                      ? "border border-gold text-gold"
-                      : "border border-sand text-rg-dark enabled:hover:border-rg disabled:opacity-50"
-                }`}
-              >
-                {n}
-              </button>
+          {sides.map(({ player, odds, index }) => {
+            const highlighted = shownWinner === player.id;
+            const input = (
+              <div key={player.id} className="flex flex-col items-center pt-3">
+                <label className="sr-only" htmlFor={`${match.id}-s${index}`}>
+                  Sets gagnés par {player.name}
+                </label>
+                <input
+                  id={`${match.id}-s${index}`}
+                  value={draft[index] ?? ""}
+                  onChange={(e) => update(index, e.target.value)}
+                  onBlur={() => complete && setTouched(true)}
+                  disabled={!open || busy}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="–"
+                  aria-invalid={!!error}
+                  className={`h-14 w-16 rounded-xl border-2 text-center text-2xl font-extrabold transition outline-none placeholder:text-sand disabled:cursor-not-allowed ${
+                    error
+                      ? "border-live/60 bg-live/5 text-live"
+                      : highlighted
+                        ? "border-clay bg-clay-50 text-clay-dark"
+                        : "border-sand bg-cream text-rg-dark focus:border-rg"
+                  } ${open ? "focus:ring-4 focus:ring-clay/20" : "disabled:opacity-80"}`}
+                />
+                <span
+                  className={`mt-1.5 rounded-full px-2.5 py-0.5 text-sm font-extrabold ${
+                    winnerId === player.id
+                      ? "bg-rg text-white"
+                      : highlighted
+                        ? "bg-clay text-white"
+                        : "bg-cream text-rg-dark"
+                  }`}
+                  title={`Cote ${formatOdds(odds)} × 100`}
+                >
+                  {formatPoints(oddsToPoints(odds))} pts
+                </span>
+                <span className="mt-0.5 text-[10px] text-muted">cote {formatOdds(odds)}</span>
+              </div>
+            );
+            return index === 0 ? (
+              input
+            ) : (
+              <FragmentWithSeparator key={player.id} label={`${need} sets gagnants`}>
+                {input}
+              </FragmentWithSeparator>
             );
           })}
         </div>
-        <span className="ml-auto text-[11px] text-muted">
-          {match.bestOf === 5 ? "3 sets gagnants" : "2 sets gagnants"}
+
+        <div className="mt-auto">
+          {open && (
+            <div className="flex min-h-12 items-center gap-2 px-4 pt-3">
+              <p className={`flex-1 text-xs ${error ? "font-semibold text-live" : "text-muted"}`} role={error ? "alert" : undefined}>
+                {error ??
+                  (valid
+                    ? dirty
+                      ? "Score cohérent : valide ton prono."
+                      : "Prono enregistré. Tu peux le modifier jusqu'au début du match."
+                    : `Indique les sets gagnés par chaque joueur (ex. ${need}-0, ${need}-1…).`)}
+              </p>
+              {prediction && !dirty && (
+                <button
+                  type="button"
+                  onClick={() => onPredict!(null, null)}
+                  disabled={busy}
+                  className="text-xs font-semibold text-muted underline-offset-2 hover:text-live hover:underline"
+                >
+                  Retirer
+                </button>
+              )}
+              {(dirty || !prediction) && (
+                <button
+                  type="submit"
+                  disabled={!valid || busy}
+                  className="rounded-full bg-clay px-4 py-2 text-sm font-bold text-white shadow transition hover:bg-clay-dark disabled:bg-sand disabled:text-muted disabled:shadow-none"
+                >
+                  {busy ? "…" : prediction ? "Modifier" : "Valider"}
+                </button>
+              )}
+            </div>
+          )}
+          <Footer match={match} prediction={prediction} result={result} />
+        </div>
+      </form>
+    </article>
+  );
+}
+
+/** Place le séparateur central entre les deux cases de score (2e colonne de la grille). */
+function FragmentWithSeparator({ children, label }: { children: React.ReactNode; label: string }) {
+  return (
+    <>
+      <div className="flex h-[4.25rem] flex-col items-center justify-center self-start pt-3">
+        <span className="text-xl font-black text-sand">–</span>
+        <span className="text-center text-[9px] leading-tight font-semibold text-muted uppercase">
+          {label.split(" ").slice(0, 2).join(" ")}
+          <br />
+          {label.split(" ").slice(2).join(" ")}
         </span>
       </div>
-
-      <Footer match={match} prediction={prediction} score={score} />
-    </article>
+      {children}
+    </>
   );
 }
 
@@ -134,11 +225,7 @@ function StatusBadge({ match }: { match: MatchState }) {
   if (match.status === "finished") {
     return <span className="rounded-full bg-sand px-2 py-0.5 text-[11px] font-bold text-muted uppercase">Terminé</span>;
   }
-  return (
-    <span className="rounded-full bg-rg-light px-2 py-0.5 text-[11px] font-bold text-rg uppercase">
-      {match.tour}
-    </span>
-  );
+  return <span className="rounded-full bg-rg-light px-2 py-0.5 text-[11px] font-bold text-rg uppercase">{match.tour}</span>;
 }
 
 function PlayerBlock({ player, winner }: { player: Player; winner?: string }) {
@@ -169,7 +256,7 @@ function Center({ match }: { match: MatchState }) {
   if (match.result) {
     const p1Won = match.result.winnerId === match.player1.id;
     return (
-      <div className="flex flex-col items-center gap-0.5 font-mono text-sm font-bold text-rg-dark">
+      <div className="flex min-w-12 flex-col items-center gap-0.5 font-mono text-sm font-bold text-rg-dark">
         {match.result.score.map((s, i) => {
           const [w, l] = s.split("-");
           return (
@@ -183,8 +270,8 @@ function Center({ match }: { match: MatchState }) {
   }
   return (
     <span
-      className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${
-        match.status === "live" ? "bg-live text-white" : "bg-clay text-white"
+      className={`mt-1.5 flex h-9 w-9 items-center justify-center rounded-full text-xs font-black text-white ${
+        match.status === "live" ? "bg-live" : "bg-clay"
       }`}
     >
       VS
@@ -192,110 +279,76 @@ function Center({ match }: { match: MatchState }) {
   );
 }
 
-function OddsButton(props: {
-  odds: number;
-  selected: boolean;
-  open: boolean;
-  correct?: boolean;
-  disabled?: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  const { odds, selected, open, correct, disabled, label, onClick } = props;
-  let cls = "border border-sand bg-cream text-rg-dark";
-  if (selected) {
-    if (correct === true) cls = "bg-rg text-white shadow";
-    else if (correct === false) cls = "bg-sand text-muted";
-    else cls = "animate-pop bg-clay text-white shadow-md ring-2 ring-clay/30";
-  } else if (correct === true) {
-    cls = "border border-rg/40 bg-rg-light text-rg-dark";
-  }
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!open || disabled}
-      aria-pressed={selected}
-      aria-label={`${label}, cote ${formatOdds(odds)}`}
-      className={`flex h-12 flex-col items-center justify-center rounded-xl transition ${cls} ${
-        open ? "enabled:hover:brightness-95 enabled:active:scale-[0.98]" : "cursor-default"
-      }`}
-    >
-      <span className={`text-[10px] font-bold tracking-wider uppercase ${selected ? "opacity-90" : "text-muted"}`}>
-        {selected ? "Mon prono" : "Cote"}
-      </span>
-      <span className={`text-lg leading-none font-extrabold ${selected && correct === false ? "line-through" : ""}`}>
-        {formatOdds(odds)}
-      </span>
-    </button>
-  );
-}
-
 function Footer({
   match,
   prediction,
-  score,
+  result,
 }: {
   match: MatchState;
   prediction?: Prediction;
-  score: ReturnType<typeof scorePrediction> | null;
+  result: ReturnType<typeof scorePrediction> | null;
 }) {
   const base = "mt-3 flex items-center gap-2 px-4 py-2.5 text-xs";
+  const real = match.result
+    ? match.result.winnerId === match.player1.id
+      ? `${setsToWin(match.bestOf)}-${match.result.sets - setsToWin(match.bestOf)}`
+      : `${match.result.sets - setsToWin(match.bestOf)}-${setsToWin(match.bestOf)}`
+    : null;
 
   if (!prediction) {
-    if (match.status === "upcoming") {
-      return (
-        <div className={`${base} bg-cream/70 text-muted`}>
-          Touche une cote pour choisir ton vainqueur.
-        </div>
-      );
-    }
+    if (match.status === "upcoming") return null;
     return (
       <div className={`${base} bg-cream/70 text-muted`}>
-        <LockIcon width={14} height={14} /> Pas de prono sur ce match.
+        <LockIcon width={14} height={14} /> Pas de prono sur ce match{real && ` · score final ${real}`}.
       </div>
     );
   }
 
-  if (match.status !== "finished" || !score) {
-    const potential = potentialPoints(match, prediction);
+  if (match.status === "upcoming") {
+    const score = scoreFromPrediction(match, prediction);
+    const points = oddsToPoints(prediction.winnerId === match.player1.id ? match.odds1 : match.odds2);
     return (
-      <div className={`${base} ${match.status === "live" ? "bg-live/5" : "bg-clay-50"} text-ink`}>
-        {match.status === "live" && <LockIcon width={14} height={14} className="text-live" />}
+      <div className={`${base} bg-clay-50 text-ink`}>
         <span>
-          Gain : <strong className="text-clay-dark">{pts(potential.winner)}</strong>
-          {potential.exact !== null ? (
+          Mon prono{score && <strong> {score.join("-")}</strong>} · Gain : <strong className="text-clay-dark">{pts(points)}</strong>
+          {score && (
             <>
               {" "}
-              · <strong className="text-gold">{pts(potential.exact)}</strong> si {prediction.sets} sets
+              · <strong className="text-gold">{pts(points * 2)}</strong> si score exact
             </>
-          ) : (
-            match.status === "upcoming" && <span className="text-muted"> · choisis les sets pour doubler</span>
           )}
         </span>
       </div>
     );
   }
 
-  if (score.outcome === "perfect") {
+  if (match.status === "live" || !result) {
     return (
-      <div className={`${base} bg-gold/15 font-bold text-ink`}>
-        <span className="text-base">🎾</span> Sets exacts ! Cote doublée
-        <span className="ml-auto rounded-full bg-gold px-2.5 py-0.5 text-sm text-white">+{pts(score.points)}</span>
+      <div className={`${base} bg-live/5 text-ink`}>
+        <LockIcon width={14} height={14} className="text-live" /> Prono verrouillé, en attente du résultat.
       </div>
     );
   }
-  if (score.outcome === "won") {
+
+  if (result.outcome === "perfect") {
+    return (
+      <div className={`${base} bg-gold/15 font-bold text-ink`}>
+        <span className="text-base">🎾</span> Score exact ({real}) ! Points doublés
+        <span className="ml-auto rounded-full bg-gold px-2.5 py-0.5 text-sm text-white">+{pts(result.points)}</span>
+      </div>
+    );
+  }
+  if (result.outcome === "won") {
     return (
       <div className={`${base} bg-rg-light font-bold text-rg-dark`}>
-        <CheckIcon width={14} height={14} /> Bon vainqueur
-        <span className="ml-auto rounded-full bg-rg px-2.5 py-0.5 text-sm text-white">+{pts(score.points)}</span>
+        <CheckIcon width={14} height={14} /> Bon vainqueur (score final {real})
+        <span className="ml-auto rounded-full bg-rg px-2.5 py-0.5 text-sm text-white">+{pts(result.points)}</span>
       </div>
     );
   }
   return (
     <div className={`${base} bg-sand/60 font-semibold text-muted`}>
-      Raté, ce sera pour la prochaine !
+      Raté (score final {real}), ce sera pour la prochaine !
       <span className="ml-auto rounded-full bg-white px-2.5 py-0.5 text-sm">0 pt</span>
     </div>
   );

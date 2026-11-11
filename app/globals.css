@@ -37,6 +37,11 @@
   color-scheme: light;
 }
 
+button:not(:disabled),
+[role="tab"] {
+  cursor: pointer;
+}
+
 html,
 body {
   background: var(--color-cream);

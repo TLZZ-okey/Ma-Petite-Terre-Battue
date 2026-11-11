@@ -5,15 +5,21 @@ Application web (PWA) de pronostics tennis entre amis, inspirée de *Mon Petit P
 
 ## Règles du jeu
 
+Pour chaque match, le joueur saisit le **score en sets** : le nombre de sets gagnés par chacun des deux joueurs
+(ex. 2-0, 2-1, 1-2, 0-2 en 2 sets gagnants ; 3-0, 3-1, 3-2… en Grand Chelem masculin). Sous chaque case, l'app affiche
+les points que rapporte ce joueur s'il gagne : **cote × 100** (cote 1,47 → 147 pts, cote 2,64 → 264 pts).
+
 | Pronostic | Points |
 | --- | --- |
 | Mauvais vainqueur | 0 |
-| Bon vainqueur | la **cote** du vainqueur (cote 1,85 → 1,85 pt) |
-| Bon vainqueur **et** nombre de sets exact | **2 × la cote** du vainqueur (1,85 → 3,70 pts) |
+| Bon vainqueur | **cote du vainqueur × 100** (1,47 → 147 pts) |
+| Bon vainqueur **et** score en sets exact | **le double** (1,47 → 294 pts) |
 
-- Le pronostic du vainqueur est obligatoire, celui du nombre de sets est optionnel (2 ou 3 sets, ou 3/4/5 en Grand Chelem masculin).
+- Le score saisi doit être cohérent : un seul vainqueur, qui remporte exactement le nombre de sets requis
+  (impossible de saisir 2-2, 1-1 ou 3-0 dans un match en 2 sets gagnants). Sinon le bouton « Valider » reste bloqué et
+  l'erreur est expliquée.
 - On peut modifier ou retirer son prono jusqu'au début du match ; ensuite il est verrouillé.
-- Classement : points, puis nombre de sets exacts, puis nombre de bons vainqueurs.
+- Classement : points, puis nombre de scores exacts, puis nombre de bons vainqueurs.
 
 ## Version 1 (actuelle) : 100 % locale
 
@@ -24,6 +30,8 @@ Application web (PWA) de pronostics tennis entre amis, inspirée de *Mon Petit P
   `localStorage` du navigateur — tous les joueurs d'un même appareil partagent le classement.
 - **Outils de démo** (page Profil) : avancer l'horloge de l'app, terminer les matchs en cours ou simuler tous les résultats
   du jour pour voir les points tomber.
+- **Interface responsive** : navigation en bas sur mobile ; sur PC, menu dans l'en-tête, matchs sur deux colonnes
+  et colonne latérale (total, règles, mini-classement).
 - **PWA** : manifeste, icônes, service worker (installable sur l'écran d'accueil, pages consultables hors ligne).
 
 ## Stack
@@ -80,6 +88,12 @@ tests/                  tests Vitest
 3. Ligues privées entre amis, notifications push avant les matchs.
 
 ## Aperçu
+
+**Sur PC**
+
+![](docs/screenshots/pc-matchs.png)
+
+**Sur mobile**
 
 | Connexion | Matchs | Mes pronos | Classement |
 | --- | --- | --- | --- |

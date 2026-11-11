@@ -15,30 +15,30 @@ export default function ClassementPage() {
   const podium = (data ?? []).slice(0, 3);
 
   return (
-    <div>
+    <div className="md:mx-auto md:max-w-3xl">
       <PageTitle title="Classement" subtitle="Tous les joueurs de cet appareil" />
 
       {loading && !data ? (
-        <div className="mx-4 h-64 animate-pulse rounded-2xl bg-white/70" />
+        <div className="mx-4 h-64 md:mx-0 animate-pulse rounded-2xl bg-white/70" />
       ) : (
         <>
           {podium.length > 0 && (
-            <div className="clay-court mx-4 flex items-end justify-center gap-3 rounded-3xl px-3 pt-6 pb-0 shadow-md">
+            <div className="clay-court mx-4 flex items-end justify-center gap-3 rounded-3xl px-3 pt-6 pb-0 shadow-md md:mx-0 md:gap-8">
               {[podium[1], podium[0], podium[2]].map((entry, i) =>
                 entry ? <PodiumStep key={entry.user.id} entry={entry} height={[88, 120, 64][i]} /> : <div key={i} className="w-24" />,
               )}
             </div>
           )}
 
-          <ol className="mx-4 mt-4 overflow-hidden rounded-2xl border border-sand bg-white shadow-sm">
-            <li className="grid grid-cols-[2.5rem_1fr_3rem_3rem_4.5rem] items-center gap-1 bg-rg px-3 py-2 text-[10px] font-bold tracking-wide text-white/85 uppercase">
+          <ol className="mx-4 mt-4 md:mx-0 md:mt-6 overflow-hidden rounded-2xl border border-sand bg-white shadow-sm">
+            <li className="grid grid-cols-[2.5rem_1fr_3rem_3rem_4.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_6rem] items-center gap-1 bg-rg px-3 py-2 text-[10px] font-bold tracking-wide text-white/85 uppercase">
               <span>#</span>
               <span>Joueur</span>
               <span className="text-center" title="Bons vainqueurs">
                 Justes
               </span>
-              <span className="text-center" title="Sets exacts">
-                Sets
+              <span className="text-center" title="Scores exacts">
+                Exacts
               </span>
               <span className="text-right">Points</span>
             </li>
@@ -47,7 +47,7 @@ export default function ClassementPage() {
               return (
                 <li
                   key={e.user.id}
-                  className={`grid grid-cols-[2.5rem_1fr_3rem_3rem_4.5rem] items-center gap-1 border-t border-sand px-3 py-2.5 text-sm ${
+                  className={`grid grid-cols-[2.5rem_1fr_3rem_3rem_4.5rem] md:grid-cols-[3rem_1fr_6rem_6rem_6rem] items-center gap-1 border-t transition-colors hover:bg-cream/60 border-sand px-3 py-2.5 text-sm ${
                     me ? "bg-clay-50" : ""
                   }`}
                 >
@@ -75,7 +75,7 @@ export default function ClassementPage() {
             })}
           </ol>
           {(data?.length ?? 0) < 2 && (
-            <p className="mx-4 mt-4 rounded-xl bg-white p-4 text-center text-sm text-muted">
+            <p className="mx-4 mt-4 md:mx-0 rounded-xl bg-white p-4 text-center text-sm text-muted">
               Invite tes amis à créer un compte sur cet appareil pour vous affronter ! Les comptes partagés en ligne
               arriveront avec la base de données.
             </p>

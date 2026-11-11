@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { pts } from "@/lib/format";
 import { SplashScreen, useApp } from "./AppProvider";
+import { Avatar } from "./Avatar";
 import { useMyPredictions } from "./hooks";
 import { BallIcon, Logo, TicketIcon, TrophyIcon, UserIcon } from "./icons";
 
@@ -26,9 +27,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!ready || !user) return <SplashScreen />;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-2xl flex-col bg-cream sm:shadow-xl">
+    <div className="flex min-h-dvh flex-col bg-cream">
       <Header />
-      <main className="flex-1 pb-24">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 pb-24 md:px-6 md:pb-12">{children}</main>
       <BottomNav />
     </div>
   );
@@ -36,14 +37,42 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function Header() {
   const { data } = useMyPredictions();
+  const { user } = useApp();
+  const pathname = usePathname();
   return (
     <header className="pt-safe sticky top-0 z-30 bg-rg text-white shadow-md">
-      <div className="flex h-14 items-center gap-3 px-4">
-        <Logo size={34} />
-        <div className="min-w-0 flex-1 leading-tight">
-          <p className="truncate text-[15px] font-extrabold tracking-wide uppercase">Ma Petite Terre Battue</p>
-          <p className="text-[11px] font-medium text-white/70">Pronostics tennis entre amis</p>
-        </div>
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 md:px-6">
+        <Link href="/matchs" className="flex min-w-0 flex-1 items-center gap-3 md:flex-none">
+          <Logo size={34} />
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-[15px] font-extrabold tracking-wide uppercase">Ma Petite Terre Battue</p>
+            <p className="text-[11px] font-medium text-white/70">Pronostics tennis entre amis</p>
+          </div>
+        </Link>
+        <nav className="ml-6 hidden h-full flex-1 items-stretch gap-1 md:flex" aria-label="Navigation principale">
+          {TABS.map(({ href, label, Icon }) => {
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-2 border-b-4 px-3 text-sm font-bold transition-colors ${
+                  active ? "border-clay text-white" : "border-transparent text-white/70 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <Icon width={18} height={18} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+        {user && (
+          <Link href="/profil" className="hidden items-center gap-2 text-sm font-semibold text-white/90 hover:text-white lg:flex">
+            <Avatar name={user.username} color={user.avatarColor} size={30} />
+            {user.username}
+          </Link>
+        )}
         <Link
           href="/pronos"
           className="flex items-center gap-1.5 rounded-full bg-clay px-3 py-1.5 text-sm font-bold shadow-inner ring-1 ring-white/30"
@@ -61,7 +90,7 @@ function Header() {
 function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-sand bg-white/95 backdrop-blur">
+    <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-sand bg-white/95 backdrop-blur md:hidden">
       <ul className="mx-auto flex max-w-2xl">
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
@@ -89,9 +118,9 @@ function BottomNav() {
 
 export function PageTitle({ title, subtitle, children }: { title: string; subtitle?: string; children?: ReactNode }) {
   return (
-    <div className="flex items-end justify-between gap-3 px-4 pt-5 pb-3">
+    <div className="flex items-end justify-between gap-3 px-4 pt-5 pb-3 md:px-0 md:pt-8 md:pb-5">
       <div>
-        <h1 className="text-xl font-extrabold tracking-tight text-rg-dark uppercase">{title}</h1>
+        <h1 className="text-xl font-extrabold tracking-tight text-rg-dark uppercase md:text-2xl">{title}</h1>
         {subtitle && <p className="text-sm text-muted">{subtitle}</p>}
       </div>
       {children}

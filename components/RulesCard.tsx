@@ -4,14 +4,16 @@ export function RulesCard({ className = "mx-4 mt-4" }: { className?: string }) {
       <p className="mb-2 font-extrabold text-rg-dark uppercase">Comment marquer des points ?</p>
       <ul className="space-y-1.5 text-ink">
         <li>
-          🎾 <strong>Bon vainqueur</strong> : tu gagnes la <strong>cote</strong> du joueur en points (cote 1,85 = 1,85
-          pt).
+          ✍️ Pour chaque match, indique le <strong>nombre de sets gagnés</strong> par chaque joueur (ex. 2-0, 2-1, 1-2…).
         </li>
         <li>
-          🏆 <strong>Bon vainqueur + nombre de sets exact</strong> : la cote est <strong>doublée</strong> (1,85 → 3,70
+          🎾 <strong>Bon vainqueur</strong> : tu gagnes la <strong>cote × 100</strong> en points (cote 1,47 = 147 pts).
+        </li>
+        <li>
+          🏆 <strong>Bon vainqueur + score en sets exact</strong> : les points sont <strong>doublés</strong> (147 → 294
           pts).
         </li>
-        <li>❌ Mauvais vainqueur : 0 point, même si le nombre de sets est juste.</li>
+        <li>❌ Mauvais vainqueur : 0 point.</li>
         <li>🔒 Les pronos ferment au début du match. Tu peux les modifier jusque-là.</li>
       </ul>
     </div>

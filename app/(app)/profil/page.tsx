@@ -51,8 +51,9 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="pb-6">
-      <div className="clay-court relative mx-4 mt-5 flex flex-col items-center rounded-3xl px-4 pt-6 pb-5 text-white shadow-md">
+    <div className="pb-6 md:grid md:grid-cols-2 md:items-start md:gap-6 md:pt-8">
+      <div>
+      <div className="clay-court relative mx-4 mt-5 md:mx-0 md:mt-0 flex flex-col items-center rounded-3xl px-4 pt-6 pb-5 text-white shadow-md">
         <Avatar name={user.username} color={user.avatarColor} size={76} />
         <h1 className="mt-2 text-xl font-black drop-shadow">{user.username}</h1>
         <p className="text-xs font-medium text-white/90 drop-shadow">
@@ -60,11 +61,11 @@ export default function ProfilPage() {
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 px-4 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 px-4 md:px-0">
         <StatTile label="Points" value={formatPoints(stats?.points ?? 0)} accent="text-clay" />
         <StatTile label="Pronos joués" value={String(stats?.total ?? 0)} />
         <StatTile label="Bons vainqueurs" value={String(stats?.won ?? 0)} accent="text-rg" />
-        <StatTile label="Sets exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
+        <StatTile label="Scores exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
       </div>
 
       <Section title="Couleur de l'avatar">
@@ -85,7 +86,10 @@ export default function ProfilPage() {
         </div>
       </Section>
 
-      <RulesCard className="mx-4 mt-4" />
+      {renderAccountActions()}
+      </div>
+      <div>
+      <RulesCard className="mx-4 mt-4 md:mx-0 md:mt-0" />
 
       <Section title="Outils de démo">
         <p className="mb-3 text-xs text-muted">
@@ -115,7 +119,14 @@ export default function ProfilPage() {
         </div>
       </Section>
 
-      <div className="mt-6 space-y-2 px-4">
+      </div>
+      {toast.node}
+    </div>
+  );
+
+  function renderAccountActions() {
+    return (
+      <div className="mt-6 space-y-2 px-4 md:px-0">
         <button
           type="button"
           onClick={() => {
@@ -153,14 +164,13 @@ export default function ProfilPage() {
           </button>
         )}
       </div>
-      {toast.node}
-    </div>
-  );
+    );
+  }
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mx-4 mt-4 rounded-2xl border border-sand bg-white p-4 shadow-sm">
+    <section className="mx-4 mt-4 md:mx-0 rounded-2xl border border-sand bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-extrabold tracking-wide text-rg-dark uppercase">{title}</h2>
       {children}
     </section>

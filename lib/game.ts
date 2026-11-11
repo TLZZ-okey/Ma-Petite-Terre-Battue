@@ -9,7 +9,8 @@ export function validatePrediction(
 ): string | null {
   if (match.status !== "upcoming") return "Le match a commencé : les pronostics sont fermés.";
   if (winnerId !== match.player1.id && winnerId !== match.player2.id) return "Joueur inconnu.";
-  if (sets !== null && !possibleSets(match.bestOf).includes(sets)) return "Nombre de sets invalide.";
+  if (sets === null) return "Indique le score en sets du match.";
+  if (!possibleSets(match.bestOf).includes(sets)) return "Nombre de sets invalide.";
   return null;
 }
 
@@ -43,7 +44,6 @@ export function computeStats(predictions: Prediction[], matches: Map<string, Mat
     if (outcome === "won" || outcome === "perfect") stats.won++;
     if (outcome === "perfect") stats.perfect++;
   }
-  stats.points = Math.round(stats.points * 100) / 100;
   return stats;
 }
 
