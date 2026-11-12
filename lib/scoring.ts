@@ -3,11 +3,11 @@ import type { MatchState, Prediction } from "./types";
 /**
  * Règles de calcul des points :
  * - mauvais vainqueur : 0 point ;
- * - bon vainqueur : la cote du vainqueur × 100 (cote 1,47 → 147 points) ;
- * - bon vainqueur ET score en sets exact (ex. 2-1) : le double (147 → 294 points).
+ * - bon vainqueur : la cote du vainqueur × 20, arrondie (cote 2,00 → 40 points) ;
+ * - bon vainqueur ET score en sets exact (ex. 2-1) : ces points × 1,5, arrondis (40 → 60 points).
  */
-export const POINTS_PER_ODDS_UNIT = 100;
-export const EXACT_SCORE_MULTIPLIER = 2;
+export const POINTS_PER_ODDS_UNIT = 20;
+export const EXACT_SCORE_MULTIPLIER = 1.5;
 
 export type PredictionOutcome = "pending" | "lost" | "won" | "perfect";
 
@@ -16,9 +16,14 @@ export interface PredictionScore {
   points: number;
 }
 
-/** Points gagnés pour un bon vainqueur : cote × 100, arrondi à l'entier. */
+/** Points gagnés pour un bon vainqueur : cote × 20, arrondi à l'entier. */
 export function oddsToPoints(odds: number): number {
   return Math.round(odds * POINTS_PER_ODDS_UNIT);
+}
+
+/** Points gagnés avec le score exact : points de base × 1,5, arrondi à l'entier. */
+export function exactScorePoints(basePoints: number): number {
+  return Math.round(basePoints * EXACT_SCORE_MULTIPLIER);
 }
 
 export function oddsFor(match: Pick<MatchState, "player1" | "odds1" | "odds2">, playerId: string): number {
@@ -35,7 +40,7 @@ export function scorePrediction(match: MatchState, prediction: Pick<Prediction, 
   }
   const points = oddsToPoints(oddsFor(match, winnerId));
   if (prediction.sets !== null && prediction.sets === sets) {
-    return { outcome: "perfect", points: points * EXACT_SCORE_MULTIPLIER };
+    return { outcome: "perfect", points: exactScorePoints(points) };
   }
   return { outcome: "won", points };
 }
@@ -46,7 +51,7 @@ export function potentialPoints(
   prediction: Pick<Prediction, "winnerId" | "sets">,
 ): { winner: number; exact: number | null } {
   const points = oddsToPoints(oddsFor(match, prediction.winnerId));
-  return { winner: points, exact: prediction.sets !== null ? points * EXACT_SCORE_MULTIPLIER : null };
+  return { winner: points, exact: prediction.sets !== null ? exactScorePoints(points) : null };
 }
 
 /** Nombre de sets à remporter pour gagner le match. */

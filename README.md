@@ -7,15 +7,15 @@ Application web (PWA) de pronostics tennis entre amis, inspirée de *Mon Petit P
 
 Pour chaque match, le joueur saisit le **score en sets** : le nombre de sets gagnés par chacun des deux joueurs
 (ex. 2-0, 2-1, 1-2, 0-2 en 2 sets gagnants ; 3-0, 3-1, 3-2… en Grand Chelem masculin). Sous chaque case, l'app affiche
-les points que rapporte ce joueur s'il gagne (calculés comme **cote × 100** : cote 1,47 → 147 pts ; la cote
+les points que rapporte ce joueur s'il gagne (calculés comme **cote × 20** : cote 2,00 → 40 pts ; la cote
 elle-même n'est pas affichée). Le prono est **enregistré automatiquement** dès que le score saisi est cohérent ;
 vider les deux cases retire le prono.
 
 | Pronostic | Points |
 | --- | --- |
 | Mauvais vainqueur | 0 |
-| Bon vainqueur | **cote du vainqueur × 100** (1,47 → 147 pts) |
-| Bon vainqueur **et** score en sets exact | **le double** (1,47 → 294 pts) |
+| Bon vainqueur | **cote du vainqueur × 20**, arrondi (2,00 → 40 pts ; 1,47 → 29 pts) |
+| Bon vainqueur **et** score en sets exact | **ces points × 1,5**, arrondi (40 → 60 pts ; 29 → 44 pts) |
 
 - Le score saisi doit être cohérent : un seul vainqueur, qui remporte exactement le nombre de sets requis
   (impossible de saisir 2-2, 1-1 ou 3-0 dans un match en 2 sets gagnants). Sinon rien n'est enregistré et l'erreur

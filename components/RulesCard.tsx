@@ -9,11 +9,11 @@ export function RulesCard({ className = "mx-4 mt-4" }: { className?: string }) {
         </li>
         <li>
           🎾 <strong>Bon vainqueur</strong> : tu gagnes le <strong>nombre de points affiché</strong> sous le joueur
-          (ex. 147 pts).
+          (cote × 20, ex. 40 pts).
         </li>
         <li>
-          🏆 <strong>Bon vainqueur + score en sets exact</strong> : ces points sont <strong>doublés</strong> (147 → 294
-          pts).
+          🏆 <strong>Bon vainqueur + score en sets exact</strong> : ces points sont <strong>multipliés par 1,5</strong>{" "}
+          (40 → 60 pts).
         </li>
         <li>❌ Mauvais vainqueur : 0 point.</li>
         <li>🔒 Les pronos ferment au début du match. Tu peux les modifier jusque-là.</li>
