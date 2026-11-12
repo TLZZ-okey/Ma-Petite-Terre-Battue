@@ -24,13 +24,14 @@ describe("scorePrediction", () => {
     expect(scorePrediction(finished(p1, 2), { winnerId: p2, sets: 2 })).toEqual({ outcome: "lost", points: 0 });
   });
 
-  it("donne la cote × 100 pour un bon vainqueur", () => {
-    expect(scorePrediction(finished(p1, 3), { winnerId: p1, sets: null })).toEqual({ outcome: "won", points: 180 });
-    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 2 })).toEqual({ outcome: "won", points: 210 });
+  it("donne la cote × 20 pour un bon vainqueur", () => {
+    expect(scorePrediction(finished(p1, 3), { winnerId: p1, sets: null })).toEqual({ outcome: "won", points: 36 });
+    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 2 })).toEqual({ outcome: "won", points: 42 });
   });
 
-  it("double les points si le score en sets est exact", () => {
-    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 3 })).toEqual({ outcome: "perfect", points: 420 });
+  it("multiplie les points par 1,5 si le score en sets est exact", () => {
+    expect(scorePrediction(finished(p2, 3), { winnerId: p2, sets: 3 })).toEqual({ outcome: "perfect", points: 63 });
+    expect(scorePrediction(finished(p1, 2), { winnerId: p1, sets: 2 })).toEqual({ outcome: "perfect", points: 54 });
   });
 
   it("reste en attente tant que le match n'est pas terminé", () => {
@@ -40,11 +41,11 @@ describe("scorePrediction", () => {
 
   it("calcule les gains potentiels", () => {
     expect(potentialPoints({ ...base, odds1: 1.47, odds2: 2.64 }, { winnerId: p1, sets: 2 })).toEqual({
-      winner: 147,
-      exact: 294,
+      winner: 29, // 1,47 × 20 = 29,4
+      exact: 44, // 29 × 1,5 = 43,5
     });
     expect(potentialPoints({ ...base, odds1: 1.47, odds2: 2.64 }, { winnerId: p2, sets: null })).toEqual({
-      winner: 264,
+      winner: 53, // 2,64 × 20 = 52,8
       exact: null,
     });
   });
