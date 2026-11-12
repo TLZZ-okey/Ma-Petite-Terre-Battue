@@ -3,6 +3,8 @@
 import { enabledTournamentsLabel } from "@/lib/settings";
 import { useApp } from "./AppProvider";
 import { useAsync } from "./hooks";
+import { InfoIcon } from "./icons";
+import { Card, cx } from "./ui";
 
 interface Status {
   oddsApiConfigured: boolean;
@@ -24,6 +26,15 @@ interface Status {
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "jamais";
 
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-b border-line py-2.5 last:border-0 sm:flex-row sm:gap-4">
+      <dt className="text-ink-3 sm:w-40 sm:shrink-0">{label}</dt>
+      <dd className="font-medium text-ink">{children}</dd>
+    </div>
+  );
+}
+
 /** État des API externes (affiché dans le profil quand la source est « api »). */
 export function ApiStatusSection() {
   const { dataVersion } = useApp();
@@ -32,37 +43,47 @@ export function ApiStatusSection() {
     if (!res.ok) throw new Error(`Erreur ${res.status}`);
     return res.json();
   }, [dataVersion]);
+  const followed = enabledTournamentsLabel();
 
   return (
-    <section className="mx-4 mt-4 rounded-2xl border border-sand bg-white p-4 shadow-sm md:mx-0">
-      <h2 className="mb-3 text-sm font-extrabold tracking-wide text-rg-dark uppercase">Données en direct</h2>
-      <p className="mb-3 text-xs text-muted">
-        Programme et cotes : <strong>The Odds API</strong>
-        {enabledTournamentsLabel() && <> ({enabledTournamentsLabel()} uniquement)</>}. Scores : <strong>SportScore</strong>. Classements et
-        nationalités : <strong>ESPN</strong> (150 premiers ATP). Les cotes sont figées au début de chaque match.
+    <Card className="p-5">
+      <p className="font-display text-lg font-bold tracking-wide text-court-900 uppercase">Données en direct</p>
+      <p className="mt-1 text-sm text-ink-3">
+        Programme et cotes : <strong className="font-semibold text-ink-2">The Odds API</strong>
+        {followed && <> ({followed} uniquement)</>}. Scores : <strong className="font-semibold text-ink-2">SportScore</strong>.
+        Classements et nationalités : <strong className="font-semibold text-ink-2">ESPN</strong> (150 premiers ATP). Les
+        cotes sont figées au début de chaque match.
       </p>
-      {error && <p className="mb-2 rounded-lg bg-live/10 px-3 py-2 text-xs font-semibold text-live">{error}</p>}
+
+      {error && (
+        <p role="alert" className="mt-4 rounded-xl bg-danger-50 px-3 py-2 text-sm font-medium text-danger">
+          {error}
+        </p>
+      )}
+
       {data && (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
-          <dt className="text-muted">Clé The Odds API</dt>
-          <dd className="font-semibold">{data.oddsApiConfigured ? "configurée ✓" : "manquante ✗"}</dd>
-          <dt className="text-muted">Requêtes restantes</dt>
-          <dd className="font-semibold">{data.quota.remaining ?? "—"} (ce mois-ci)</dd>
-          <dt className="text-muted">Cotes mises à jour</dt>
-          <dd className="font-semibold">
-            {when(data.lastOddsSync)} · toutes les {Math.round(data.refresh.oddsMinutes / 60)} h
-          </dd>
-          <dt className="text-muted">Scores mis à jour</dt>
-          <dd className="font-semibold">
-            {when(data.lastScoresSync)} · toutes les {data.refresh.scoresMinutes} min
-          </dd>
-          <dt className="text-muted">Classements</dt>
-          <dd className="font-semibold">
+        <dl className="mt-3 text-sm">
+          <Row label="Clé The Odds API">
+            <span className={data.oddsApiConfigured ? "text-court-700" : "text-danger"}>
+              {data.oddsApiConfigured ? "Configurée ✓" : "Manquante ✗"}
+            </span>
+          </Row>
+          <Row label="Requêtes restantes">
+            <span className="tabular">{data.quota.remaining ?? "—"}</span> <span className="text-ink-3">ce mois-ci</span>
+          </Row>
+          <Row label="Cotes">
+            {when(data.lastOddsSync)}{" "}
+            <span className="text-ink-3">· toutes les {Math.round(data.refresh.oddsMinutes / 60)} h</span>
+          </Row>
+          <Row label="Scores">
+            {when(data.lastScoresSync)} <span className="text-ink-3">· toutes les {data.refresh.scoresMinutes} min</span>
+          </Row>
+          <Row label="Classements">
             {data.rankings?.atp.players
-              ? `ATP ${data.rankings.atp.players} joueurs (ESPN, ${when(data.rankings.atp.updated)})`
-              : "pas encore chargés"}
+              ? `ATP · ${data.rankings.atp.players} joueurs (publié le ${when(data.rankings.atp.updated)})`
+              : "Pas encore chargés"}
             {data.rankings && (
-              <span className="block font-normal text-muted">
+              <span className="block text-xs font-normal text-ink-3">
                 Mis à jour chaque lundi · prochaine fois le{" "}
                 {new Date(data.rankings.nextRefresh).toLocaleString("fr-FR", {
                   weekday: "long",
@@ -73,29 +94,33 @@ export function ApiStatusSection() {
                 })}
               </span>
             )}
-          </dd>
-          <dt className="text-muted">Tournois suivis</dt>
-          <dd className="font-semibold">{data.activeTournaments.length || "aucun pour l'instant"}</dd>
-          <dt className="text-muted">Matchs connus</dt>
-          <dd className="font-semibold">
-            {data.matches.total} dont {data.matches.withResult} terminés
-          </dd>
+          </Row>
+          <Row label="Tournois en cours">{data.activeTournaments.length || "Aucun pour l'instant"}</Row>
+          <Row label="Matchs connus">
+            {data.matches.total} <span className="text-ink-3">dont {data.matches.withResult} terminés</span>
+          </Row>
         </dl>
       )}
+
       {data?.lastError && (
-        <p className="mt-3 rounded-lg bg-live/10 px-3 py-2 text-xs text-live">Dernière erreur : {data.lastError}</p>
+        <p className="mt-3 rounded-xl bg-danger-50 px-3 py-2 text-xs text-danger">Dernière erreur : {data.lastError}</p>
       )}
-      <SportScoreCredit className="mt-3" />
-    </section>
+      <SportScoreCredit className="mt-4" />
+    </Card>
   );
 }
 
 /** Mention obligatoire des conditions d'utilisation gratuites de SportScore. */
-export function SportScoreCredit({ className = "" }: { className?: string }) {
+export function SportScoreCredit({ className }: { className?: string }) {
   return (
-    <p className={`text-[11px] text-muted ${className}`}>
+    <p className={cx("text-xs text-ink-3", className)}>
       Scores :{" "}
-      <a href="https://sportscore.com/" target="_blank" rel="noopener" className="font-semibold underline">
+      <a
+        href="https://sportscore.com/"
+        target="_blank"
+        rel="noopener"
+        className="font-semibold text-ink-2 underline underline-offset-2 hover:text-court-700"
+      >
         Powered by SportScore
       </a>
     </p>
@@ -104,7 +129,7 @@ export function SportScoreCredit({ className = "" }: { className?: string }) {
 
 /**
  * Bandeau de la page Matchs (source « api ») : explique pourquoi aucun match n'apparaît
- * (clé manquante, intersaison…) au lieu d'une simple liste vide.
+ * (clé manquante, hors période du tournoi…) au lieu d'une simple liste vide.
  */
 export function ApiNotice() {
   const { source } = useApp();
@@ -126,7 +151,8 @@ export function ApiNotice() {
   }
   if (!message) return null;
   return (
-    <p role="status" className="mx-4 mt-4 rounded-xl border border-clay/30 bg-clay-50 px-4 py-3 text-sm text-ink md:mx-0">
+    <p role="status" className="mb-4 flex gap-3 rounded-xl border border-clay-200 bg-clay-50 px-4 py-3 text-sm text-ink-2">
+      <InfoIcon width={18} height={18} className="mt-0.5 shrink-0 text-clay-600" />
       {message}
     </p>
   );

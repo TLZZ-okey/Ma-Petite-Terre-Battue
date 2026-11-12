@@ -27,6 +27,21 @@ export function playerBadge(player: { country: string; name: string }): string {
   return player.country ? flag(player.country) : initials(player.name);
 }
 
+let regionNames: Intl.DisplayNames | null | undefined;
+
+/** Nom du pays en français à partir d'un code ISO alpha-2 (« DE » → « Allemagne »). */
+export function countryLabel(iso2: string, fallback = ""): string {
+  if (!iso2) return fallback;
+  if (regionNames === undefined) {
+    try {
+      regionNames = new Intl.DisplayNames(["fr"], { type: "region" });
+    } catch {
+      regionNames = null;
+    }
+  }
+  return regionNames?.of(iso2.toUpperCase()) ?? fallback ?? iso2;
+}
+
 /** Drapeau emoji à partir d'un code pays ISO alpha-2. */
 export function flag(country: string): string {
   return country
