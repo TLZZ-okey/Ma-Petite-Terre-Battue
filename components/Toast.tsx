@@ -15,11 +15,15 @@ export function useToast() {
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const node = message ? (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-40 md:bottom-8 flex justify-center px-4" role="status">
+    <div
+      className="pointer-events-none fixed inset-x-0 bottom-24 z-40 flex justify-center px-4 lg:bottom-8 lg:pl-64"
+      role="status"
+      aria-live="polite"
+    >
       <div
         key={message.id}
-        className={`animate-pop rounded-full px-4 py-2 text-sm font-bold text-white shadow-lg ${
-          message.tone === "ok" ? "bg-rg-dark" : "bg-live"
+        className={`animate-fade-up rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-float ${
+          message.tone === "ok" ? "bg-court-900" : "bg-danger"
         }`}
       >
         {message.text}
