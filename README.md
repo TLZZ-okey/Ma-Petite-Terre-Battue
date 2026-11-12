@@ -36,8 +36,22 @@ vider les deux cases retire le prono.
   et colonne latérale (total, règles, mini-classement).
 - **PWA** : manifeste, icônes, service worker (installable sur l'écran d'accueil, pages consultables hors ligne).
 
+## Design
+
+Système de design inspiré de Roland-Garros, défini dans `app/globals.css` (jetons Tailwind) et `components/ui.tsx` :
+
+- **Couleurs** : vert court (`court-*`, couleur principale : navigation, succès), terre battue (`clay-*`, accent et
+  actions), jaune balle (décoratif), neutres chauds pour les fonds et les textes. Les textes respectent un contraste
+  AA (≥ 4,5:1).
+- **Typographie** : Barlow Condensed (titres, scores, chiffres) et Inter (texte), embarquées localement.
+- **Mise en page** : barre latérale sur ordinateur, barre supérieure et onglets en bas sur mobile ; cartes de match en
+  lignes (joueur · gain · sets) identiques pour les matchs à venir, en cours et terminés.
+- **Accessibilité** : focus visible, lien d'évitement, libellés pour les lecteurs d'écran, cibles tactiles de 44 px,
+  respect de « réduire les animations ».
+
 ## Stack
 
+- Polices Inter et Barlow Condensed via Fontsource (sans appel réseau)
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS 4 (thème défini dans `app/globals.css`)
 - Vitest pour les tests unitaires

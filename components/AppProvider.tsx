@@ -142,8 +142,9 @@ export function useApp(): AppContextValue {
 
 export function SplashScreen() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-rg">
-      <div className="h-14 w-14 animate-bounce rounded-full bg-ball shadow-lg" aria-label="Chargement" />
+    <div className="flex min-h-dvh items-center justify-center bg-court-900" role="status">
+      <div className="h-12 w-12 animate-bounce rounded-full bg-ball shadow-lg" />
+      <span className="sr-only">Chargement…</span>
     </div>
   );
 }

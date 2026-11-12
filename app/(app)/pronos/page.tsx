@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageTitle } from "@/components/AppShell";
 import { useApp } from "@/components/AppProvider";
 import { useAsync, useMyPredictions } from "@/components/hooks";
 import { MatchCard } from "@/components/MatchCard";
-import { StatTile } from "@/components/StatTile";
+import { EmptyState, PageHeader, Segmented, Skeleton, StatCard } from "@/components/ui";
 import { usePredict } from "@/components/usePredict";
 import { addDays, dayKey, parseDayKey, startOfDay } from "@/lib/dates";
 import { formatDayLong, formatPoints } from "@/lib/format";
@@ -68,102 +67,93 @@ export default function PronosPage() {
   ).length;
 
   return (
-    <div>
-      <PageTitle title="Mes pronos" subtitle="Pronostique les prochains matchs et suis tes résultats" />
-      <div className="grid grid-cols-4 gap-2 px-4 md:gap-4 md:px-0">
-        <StatTile label="Points" value={formatPoints(stats?.points ?? 0)} accent="text-clay" />
-        <StatTile label="Pronos" value={String(stats?.total ?? 0)} />
-        <StatTile label="Réussite" value={`${successRate}%`} />
-        <StatTile label="Scores exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
+    <div className="px-4 sm:px-0">
+      <div className="-mx-4 sm:mx-0">
+        <PageHeader title="Mes pronos" subtitle="Pronostique les prochains matchs et suis tes résultats" />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 px-4 md:mt-6 md:px-0">
-        <div className="grid w-full grid-cols-2 rounded-full bg-sand p-1 md:w-auto md:min-w-96" role="tablist">
-          {(
-            [
-              ["upcoming", "À venir"],
-              ["finished", "Terminés"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={tab === value}
-              onClick={() => setTab(value)}
-              className={`rounded-full px-4 py-2 text-sm font-bold transition ${
-                tab === value ? "bg-white text-clay-dark shadow" : "text-rg-dark"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <StatCard label="Points" value={formatPoints(stats?.points ?? 0)} tone="clay" />
+        <StatCard label="Pronos joués" value={stats?.total ?? 0} />
+        <StatCard
+          label="Réussite"
+          value={`${successRate}%`}
+          hint={stats?.settled ? `${stats.won} sur ${stats.settled} terminés` : "Aucun match terminé"}
+          tone="court"
+        />
+        <StatCard label="Scores exacts" value={stats?.perfect ?? 0} tone="gold" />
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <Segmented
+          label="Période"
+          value={tab}
+          onChange={setTab}
+          className="w-full sm:w-auto sm:min-w-80"
+          options={[
+            { value: "upcoming", label: "À venir" },
+            { value: "finished", label: "Terminés" },
+          ]}
+        />
         {tab === "upcoming" ? (
-          <p className="text-xs text-muted">
-            <strong className="text-rg-dark">
+          <p className="text-sm text-ink-2">
+            <strong className="tabular font-semibold text-ink">
               {upcomingPredicted}/{upcomingTotal}
             </strong>{" "}
             matchs à venir pronostiqués
           </p>
         ) : (
-          <div className="flex gap-2">
-            {(
-              [
-                ["all", "Tous les matchs"],
-                ["mine", "Avec mon prono"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFinishedFilter(value)}
-                aria-pressed={finishedFilter === value}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${
-                  finishedFilter === value ? "bg-rg text-white" : "border border-sand bg-white text-rg-dark"
-                }`}
-              >
-                {label}
-              </button>
+          <Segmented
+            label="Filtre"
+            size="sm"
+            value={finishedFilter}
+            onChange={setFinishedFilter}
+            options={[
+              { value: "all", label: "Tous les matchs" },
+              { value: "mine", label: "Avec mon prono" },
+            ]}
+          />
+        )}
+      </div>
+
+      <div className="mt-6">
+        {loading && !windowMatches ? (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-52" />
+            ))}
+          </div>
+        ) : groups.length === 0 ? (
+          <EmptyState title={tab === "upcoming" ? "Aucun match à venir" : "Aucun match terminé à afficher"}>
+            {tab === "finished" && finishedFilter === "mine" && "Tes pronos apparaîtront ici une fois les matchs terminés."}
+          </EmptyState>
+        ) : (
+          <div className="space-y-8">
+            {groups.map(([day, list]) => (
+              <section key={day}>
+                <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-ink">
+                  <span className="first-letter:uppercase">{formatDayLong(parseDayKey(day))}</span>
+                  <span className="font-normal text-ink-3">
+                    · {list.length} match{list.length > 1 ? "s" : ""}
+                  </span>
+                </h2>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {list.map((m) => (
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      prediction={predictionsByMatch.get(m.id)}
+                      showContext
+                      busy={busyId === m.id}
+                      onPredict={(w, s) => predict(m, w, s)}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}
       </div>
-
-      {loading && !windowMatches ? (
-        <div className="grid gap-3 p-4 md:grid-cols-2 md:px-0">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-48 animate-pulse rounded-2xl bg-white/70" />
-          ))}
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="m-4 rounded-2xl border border-dashed border-clay/40 bg-white p-8 text-center md:mx-0">
-          <p className="text-3xl">🎾</p>
-          <p className="mt-2 font-bold text-rg-dark">
-            {tab === "upcoming" ? "Aucun match à venir" : "Aucun match terminé à afficher"}
-          </p>
-        </div>
-      ) : (
-        groups.map(([day, list]) => (
-          <section key={day} className="pt-5">
-            <h2 className="mb-3 px-4 text-sm font-extrabold text-rg-dark first-letter:uppercase md:px-0">
-              {formatDayLong(parseDayKey(day))}
-              <span className="ml-2 font-semibold text-muted">· {list.length} match{list.length > 1 ? "s" : ""}</span>
-            </h2>
-            <div className="grid gap-3 px-4 md:grid-cols-2 md:gap-4 md:px-0">
-              {list.map((m) => (
-                <MatchCard
-                  key={m.id}
-                  match={m}
-                  prediction={predictionsByMatch.get(m.id)}
-                  showContext
-                  busy={busyId === m.id}
-                  onPredict={(w, s) => predict(m, w, s)}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
       {toastNode}
     </div>
   );

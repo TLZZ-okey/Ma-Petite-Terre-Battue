@@ -1,35 +1,70 @@
 @import "tailwindcss";
 
 /*
- * Charte « Roland-Garros » : vert profond, terre battue, blanc des lignes,
- * jaune de la balle et crème des tribunes.
+ * Système de design « Roland-Garros »
+ * - Vert court (primaire, navigation, succès) ; terre battue (accent, actions) ;
+ *   jaune balle (décoratif uniquement) ; neutres chauds (fonds, bordures, textes).
+ * - Les couleurs de texte respectent un contraste AA (≥ 4,5:1) sur leur fond.
  */
 @theme {
-  --color-rg: #0b5b43;
-  --color-rg-dark: #063d2d;
-  --color-rg-light: #e1efe8;
-  --color-clay: #c8541e;
-  --color-clay-dark: #a3411a;
-  --color-clay-light: #e9875a;
-  --color-clay-50: #fbede5;
-  --color-cream: #f6f0e8;
-  --color-sand: #ece2d4;
-  --color-ink: #1d2a24;
-  --color-muted: #6b7a72;
-  --color-ball: #dce85a;
-  --color-gold: #d9a21b;
-  --color-silver: #a7b0b5;
-  --color-bronze: #b8743d;
-  --color-live: #d7263d;
+  /* Vert court */
+  --color-court-50: #ecf5f1;
+  --color-court-100: #d4e9df;
+  --color-court-200: #a9d2bf;
+  --color-court-500: #1d7a5a;
+  --color-court-600: #126b50;
+  --color-court-700: #0e5a43;
+  --color-court-800: #0b4a37;
+  --color-court-900: #07362a;
+  --color-court-950: #04241c;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
+  /* Terre battue */
+  --color-clay-50: #fdf2ec;
+  --color-clay-100: #f9dfd0;
+  --color-clay-200: #f2bd9f;
+  --color-clay-400: #df7a45;
+  --color-clay-500: #c95a22;
+  --color-clay-600: #b14a1a;
+  --color-clay-700: #933c16;
+
+  /* Balle */
+  --color-ball: #dbe55c;
+
+  /* Neutres chauds */
+  --color-canvas: #f6f3ee;
+  --color-surface: #ffffff;
+  --color-subtle: #f1ede6;
+  --color-line: #e5dfd5;
+  --color-line-strong: #d2cabc;
+  --color-ink: #16201b;
+  --color-ink-2: #46524c;
+  --color-ink-3: #67736c;
+
+  /* États */
+  --color-danger: #b4232f;
+  --color-danger-50: #fcebed;
+  --color-gold: #8f6400;
+  --color-gold-50: #fff4d6;
+  --color-gold-400: #e3a521;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display: "Barlow Condensed", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --animate-pop: pop 0.25s ease-out;
+  --shadow-card: 0 1px 2px rgb(22 32 27 / 0.05), 0 1px 3px rgb(22 32 27 / 0.06);
+  --shadow-raised: 0 4px 12px rgb(22 32 27 / 0.08), 0 2px 4px rgb(22 32 27 / 0.05);
+  --shadow-float: 0 12px 32px rgb(7 54 42 / 0.18);
+
+  --animate-pop: pop 0.22s ease-out;
+  --animate-fade-up: fade-up 0.25s ease-out;
   @keyframes pop {
-    0% { transform: scale(0.94); }
-    60% { transform: scale(1.04); }
+    0% { transform: scale(0.96); }
+    60% { transform: scale(1.03); }
     100% { transform: scale(1); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
@@ -37,26 +72,59 @@
   color-scheme: light;
 }
 
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Chiffres alignés pour les scores et les points */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
 button:not(:disabled),
-[role="tab"] {
+[role="tab"],
+a {
   cursor: pointer;
 }
 
-html,
-body {
-  background: var(--color-cream);
-  color: var(--color-ink);
-  -webkit-tap-highlight-color: transparent;
+:focus-visible {
+  outline: 2px solid var(--color-clay-500);
+  outline-offset: 2px;
 }
 
-/* Texture de court en terre battue (lignes blanches) */
-.clay-court {
-  background-color: var(--color-clay);
+/* Terre battue avec lignes de court, pour les zones « héro » */
+.clay-surface {
+  background-color: var(--color-clay-500);
   background-image:
-    linear-gradient(90deg, transparent 6%, rgba(255, 255, 255, 0.8) 6%, rgba(255, 255, 255, 0.8) calc(6% + 3px), transparent calc(6% + 3px), transparent calc(94% - 3px), rgba(255, 255, 255, 0.8) calc(94% - 3px), rgba(255, 255, 255, 0.8) 94%, transparent 94%),
-    linear-gradient(transparent 8%, rgba(255, 255, 255, 0.8) 8%, rgba(255, 255, 255, 0.8) calc(8% + 3px), transparent calc(8% + 3px)),
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0 2px, transparent 2px 6px);
+    radial-gradient(120% 80% at 0% 0%, rgb(255 255 255 / 0.12), transparent 60%),
+    radial-gradient(80% 60% at 100% 100%, rgb(0 0 0 / 0.12), transparent 60%),
+    repeating-linear-gradient(45deg, rgb(0 0 0 / 0.025) 0 2px, transparent 2px 6px);
+}
+
+.court-lines {
+  position: relative;
+  isolation: isolate;
+}
+.court-lines::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 2px solid rgb(255 255 255 / 0.55);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: -1;
+}
+.court-lines::after {
+  content: "";
+  position: absolute;
+  inset: 14px 50%;
+  border-left: 2px solid rgb(255 255 255 / 0.35);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .no-scrollbar {
@@ -71,4 +139,14 @@ body {
 }
 .pt-safe {
   padding-top: env(safe-area-inset-top);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

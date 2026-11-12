@@ -7,7 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { useMyPredictions } from "@/components/hooks";
 import { LogoutIcon } from "@/components/icons";
 import { RulesCard } from "@/components/RulesCard";
-import { StatTile } from "@/components/StatTile";
+import { Button, Card, PageHeader, StatCard, cx } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { AVATAR_COLORS } from "@/lib/auth";
 import { dayKey } from "@/lib/dates";
@@ -50,139 +50,148 @@ export default function ProfilPage() {
     router.replace("/connexion");
   }
 
+  const memberSince = new Date(user.createdAt).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="pb-6 md:grid md:grid-cols-2 md:items-start md:gap-6 md:pt-8">
-      <div>
-      <div className="clay-court relative mx-4 mt-5 md:mx-0 md:mt-0 flex flex-col items-center rounded-3xl px-4 pt-6 pb-5 text-white shadow-md">
-        <Avatar name={user.username} color={user.avatarColor} size={76} />
-        <h1 className="mt-2 text-xl font-black drop-shadow">{user.username}</h1>
-        <p className="text-xs font-medium text-white/90 drop-shadow">
-          Membre depuis le {new Date(user.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-        </p>
+    <div className="px-4 sm:px-0">
+      <div className="-mx-4 sm:mx-0">
+        <PageHeader title="Profil" subtitle="Ton compte, tes statistiques et les outils de démo" />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 px-4 md:px-0">
-        <StatTile label="Points" value={formatPoints(stats?.points ?? 0)} accent="text-clay" />
-        <StatTile label="Pronos joués" value={String(stats?.total ?? 0)} />
-        <StatTile label="Bons vainqueurs" value={String(stats?.won ?? 0)} accent="text-rg" />
-        <StatTile label="Scores exacts" value={String(stats?.perfect ?? 0)} accent="text-gold" />
-      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="space-y-4">
+          <Card className="overflow-hidden">
+            <div className="clay-surface court-lines h-24" aria-hidden />
+            <div className="relative z-10 -mt-10 flex flex-col items-center px-5 pb-5 text-center">
+              <Avatar name={user.username} color={user.avatarColor} size={80} />
+              <h2 className="mt-3 font-display text-2xl leading-none font-bold tracking-wide text-court-900 uppercase">
+                {user.username}
+              </h2>
+              <p className="mt-1 text-xs text-ink-3">Membre depuis le {memberSince}</p>
+            </div>
+            <div className="border-t border-line px-5 py-4">
+              <p className="text-xs font-semibold text-ink-2" id="avatar-color">
+                Couleur de l&apos;avatar
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2.5" role="radiogroup" aria-labelledby="avatar-color">
+                {AVATAR_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    role="radio"
+                    aria-checked={user.avatarColor === c}
+                    aria-label={`Couleur ${c}`}
+                    onClick={() => changeColor(c)}
+                    className={cx(
+                      "h-8 w-8 rounded-full ring-offset-2 ring-offset-surface transition",
+                      user.avatarColor === c ? "ring-2 ring-ink" : "hover:scale-110",
+                    )}
+                    style={{ background: c }}
+                  />
+                ))}
+              </div>
+            </div>
+          </Card>
 
-      <Section title="Couleur de l'avatar">
-        <div className="flex flex-wrap gap-3">
-          {AVATAR_COLORS.map((c) => (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard label="Points" value={formatPoints(stats?.points ?? 0)} tone="clay" />
+            <StatCard label="Pronos joués" value={stats?.total ?? 0} />
+            <StatCard label="Bons vainqueurs" value={stats?.won ?? 0} tone="court" />
+            <StatCard label="Scores exacts" value={stats?.perfect ?? 0} tone="gold" />
+          </div>
+
+          <Card className="p-2">
             <button
-              key={c}
               type="button"
-              onClick={() => changeColor(c)}
-              aria-label={`Couleur ${c}`}
-              aria-pressed={user.avatarColor === c}
-              className={`h-9 w-9 rounded-full transition ${
-                user.avatarColor === c ? "scale-110 ring-4 ring-clay/40" : "ring-2 ring-white"
-              }`}
-              style={{ background: c }}
-            />
-          ))}
+              onClick={() => {
+                logout();
+                router.replace("/connexion");
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-ink hover:bg-subtle"
+            >
+              <LogoutIcon width={18} height={18} className="text-ink-3" />
+              Changer de compte / Se déconnecter
+            </button>
+            {confirmDelete ? (
+              <div className="m-1 rounded-xl bg-danger-50 p-3">
+                <p className="text-sm font-semibold text-danger">Supprimer ton compte et tous tes pronos ?</p>
+                <p className="mt-0.5 text-xs text-ink-2">Cette action est définitive.</p>
+                <div className="mt-3 flex gap-2">
+                  <Button variant="danger" size="sm" onClick={deleteAccount}>
+                    Supprimer définitivement
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => setConfirmDelete(false)}>
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-danger hover:bg-danger-50"
+              >
+                Supprimer mon compte et mes pronos
+              </button>
+            )}
+          </Card>
         </div>
-      </Section>
 
-      {renderAccountActions()}
-      </div>
-      <div>
-      <RulesCard className="mx-4 mt-4 md:mx-0 md:mt-0" />
+        <div className="space-y-4">
+          <RulesCard />
 
-      <Section title="Outils de démo">
-        <p className="mb-3 text-xs text-muted">
-          Les matchs et les cotes sont fictifs pour cette première version. Avance l&apos;horloge ou termine des matchs
-          pour voir tes points tomber.
-          {timeOffset !== 0 && (
-            <strong className="mt-1 block text-clay-dark">
-              Horloge de l&apos;app : {now.toLocaleString("fr-FR", { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}{" "}
-              (+{Math.round(timeOffset / HOUR)} h)
-            </strong>
-          )}
-        </p>
-        <div className="grid grid-cols-2 gap-2 text-sm font-bold">
-          <DemoButton onClick={() => shiftTime(HOUR)}>+1 heure</DemoButton>
-          <DemoButton onClick={() => shiftTime(24 * HOUR)}>+1 jour</DemoButton>
-          <DemoButton onClick={() => finishMatches("live")}>Terminer les matchs en cours</DemoButton>
-          <DemoButton onClick={() => finishMatches("day")}>Simuler tous les résultats du jour</DemoButton>
-          <DemoButton
-            onClick={() => {
-              matches.clearOverrides();
-              shiftTime(0);
-            }}
-            className="col-span-2"
-          >
-            Revenir à l&apos;heure réelle
-          </DemoButton>
+          <Card className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-display text-lg font-bold tracking-wide text-court-900 uppercase">Outils de démo</p>
+                <p className="mt-1 text-sm text-ink-3">
+                  Les matchs et les cotes sont fictifs dans cette version. Avance l&apos;horloge ou termine des matchs
+                  pour voir tes points arriver.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-3 rounded-xl bg-subtle px-4 py-3 text-sm">
+              <span className={cx("h-2 w-2 rounded-full", timeOffset ? "bg-clay-500" : "bg-court-500")} aria-hidden />
+              <span className="text-ink-2">
+                Horloge de l&apos;app :{" "}
+                <strong className="font-semibold text-ink">
+                  {now.toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </strong>
+                {timeOffset !== 0 && <span className="text-clay-600"> (+{Math.round(timeOffset / HOUR)} h)</span>}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <Button variant="secondary" onClick={() => shiftTime(HOUR)}>
+                Avancer d&apos;1 heure
+              </Button>
+              <Button variant="secondary" onClick={() => shiftTime(24 * HOUR)}>
+                Avancer d&apos;1 jour
+              </Button>
+              <Button variant="secondary" onClick={() => finishMatches("live")}>
+                Terminer les matchs en cours
+              </Button>
+              <Button variant="primary" onClick={() => finishMatches("day")}>
+                Simuler les résultats du jour
+              </Button>
+              <Button
+                variant="ghost"
+                className="sm:col-span-2"
+                onClick={() => {
+                  matches.clearOverrides();
+                  shiftTime(0);
+                }}
+              >
+                Revenir à l&apos;heure réelle
+              </Button>
+            </div>
+          </Card>
         </div>
-      </Section>
-
       </div>
       {toast.node}
     </div>
-  );
-
-  function renderAccountActions() {
-    return (
-      <div className="mt-6 space-y-2 px-4 md:px-0">
-        <button
-          type="button"
-          onClick={() => {
-            logout();
-            router.replace("/connexion");
-          }}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-rg py-3 font-bold text-white shadow"
-        >
-          <LogoutIcon width={18} height={18} /> Changer de compte / Se déconnecter
-        </button>
-        {confirmDelete ? (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={deleteAccount}
-              className="flex-1 rounded-xl bg-live py-3 text-sm font-bold text-white"
-            >
-              Confirmer la suppression
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="flex-1 rounded-xl border border-sand bg-white py-3 text-sm font-bold"
-            >
-              Annuler
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="w-full py-2 text-sm font-semibold text-live"
-          >
-            Supprimer mon compte et mes pronos
-          </button>
-        )}
-      </div>
-    );
-  }
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mx-4 mt-4 md:mx-0 rounded-2xl border border-sand bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-extrabold tracking-wide text-rg-dark uppercase">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function DemoButton({ className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={`rounded-xl border border-clay/40 bg-clay-50 px-3 py-2.5 text-clay-dark transition hover:bg-clay hover:text-white ${className}`}
-    />
   );
 }
