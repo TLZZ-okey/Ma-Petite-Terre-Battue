@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Romans — François-Henri Désérable</title>
+<meta name="description" content="Tous les livres de François-Henri Désérable, d'Évariste à Chagrin d'un chant inachevé.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="entete">
+  <div class="conteneur">
+    <a class="logo" href="index.html">François-Henri <span>Désérable</span></a>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false">☰</button>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="index.html">Accueil</a>
+      <a href="romans.html" aria-current="page">Romans</a>
+      <a href="biographie.html">Biographie</a>
+      <a href="presse.html">Presse</a>
+    </nav>
+  </div>
+</header>
+<main class="conteneur">
+  <div class="page-titre">
+    <div class="surtitre">Œuvres</div>
+    <h1>Romans &amp; récits</h1>
+    <p>Six livres parus chez Gallimard depuis 2013, de la Révolution française aux routes d'Iran et d'Amérique du Sud.</p>
+  </div>
+  <div class="filtres" role="group" aria-label="Filtrer les livres">
+    <button type="button" data-filtre="tous" aria-pressed="true">Tous</button>
+    <button type="button" data-filtre="romans" aria-pressed="false">Romans</button>
+    <button type="button" data-filtre="recits" aria-pressed="false">Récits</button>
+  </div>
+  <div id="catalogue" class="section" style="padding-top:0"></div>
+</main>
+<footer class="pied">
+  <div class="conteneur">
+    <span>© <span id="annee"></span> François-Henri Désérable — site vitrine</span>
+    <span><a href="romans.html">Romans</a> · <a href="biographie.html">Biographie</a> · <a href="presse.html">Presse</a></span>
+  </div>
+</footer>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

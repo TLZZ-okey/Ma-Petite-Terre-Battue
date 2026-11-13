@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>François-Henri Désérable</title>
+<meta name="description" content="Site de l'écrivain François-Henri Désérable : actualités, romans, biographie et presse.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="entete">
+  <div class="conteneur">
+    <a class="logo" href="index.html">François-Henri <span>Désérable</span></a>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false">☰</button>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="index.html" aria-current="page">Accueil</a>
+      <a href="romans.html">Romans</a>
+      <a href="biographie.html">Biographie</a>
+      <a href="presse.html">Presse</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section id="carrousel" class="carrousel" aria-roledescription="carrousel" aria-label="Dernières actualités">
+    <div class="carrousel-piste"></div>
+    <button class="carrousel-fleche prec" type="button" aria-label="Actualité précédente">←</button>
+    <button class="carrousel-fleche suiv" type="button" aria-label="Actualité suivante">→</button>
+    <div class="carrousel-points"></div>
+  </section>
+
+  <section class="section">
+    <div class="conteneur">
+      <div class="section-titre">
+        <h2>Derniers livres parus</h2>
+        <a class="lien-discret" href="romans.html">Tous les livres →</a>
+      </div>
+      <div id="derniers-livres" class="grille-livres"></div>
+    </div>
+  </section>
+
+  <section class="bandeau">
+    <blockquote>« Mes humanités, je les ai faites dans une patinoire. »
+      <cite>François-Henri Désérable — ActuaLitté, 2021</cite>
+    </blockquote>
+  </section>
+</main>
+<footer class="pied">
+  <div class="conteneur">
+    <span>© <span id="annee"></span> François-Henri Désérable — site vitrine</span>
+    <span><a href="romans.html">Romans</a> · <a href="biographie.html">Biographie</a> · <a href="presse.html">Presse</a></span>
+  </div>
+</footer>
+<script src="js/data.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
