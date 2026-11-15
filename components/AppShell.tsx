@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { pts } from "@/lib/format";
+import { SportScoreCredit } from "./ApiStatus";
 import { SplashScreen, useApp } from "./AppProvider";
 import { Avatar } from "./Avatar";
 import { useMyPredictions } from "./hooks";
@@ -17,7 +18,7 @@ const TABS = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { ready, user } = useApp();
+  const { ready, user, source } = useApp();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,7 +30,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-cream">
       <Header />
-      <main className="mx-auto w-full max-w-6xl flex-1 pb-24 md:px-6 md:pb-12">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 pb-24 md:px-6 md:pb-12">
+        {children}
+        {source === "api" && <SportScoreCredit className="px-4 pt-8 text-center" />}
+      </main>
       <BottomNav />
     </div>
   );

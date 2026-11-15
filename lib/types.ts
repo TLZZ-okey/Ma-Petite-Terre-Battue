@@ -19,15 +19,17 @@ export type TournamentCategory =
 export interface Player {
   id: string;
   name: string;
-  /** Code pays ISO 3166-1 alpha-2 (pour le drapeau). */
+  /** Code pays ISO 3166-1 alpha-2 (pour le drapeau) ; chaîne vide si inconnu. */
   country: string;
-  ranking: number;
+  /** Classement mondial ; null si inconnu (données d'API sans classement). */
+  ranking: number | null;
   tour: Tour;
 }
 
 export interface Tournament {
   id: string;
   name: string;
+  /** Ville ; chaîne vide si inconnue. */
   city: string;
   surface: Surface;
   category: TournamentCategory;

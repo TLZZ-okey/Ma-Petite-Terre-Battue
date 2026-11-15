@@ -51,7 +51,7 @@ export function parseMatchId(id: string): { day: string; tour: Tour; index: numb
 }
 
 function strength(p: Player): number {
-  return 1 / Math.sqrt(p.ranking);
+  return 1 / Math.sqrt(p.ranking ?? 100);
 }
 
 /** Probabilité (sans marge) que le joueur 1 batte le joueur 2. */

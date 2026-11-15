@@ -8,6 +8,7 @@ import { useMyPredictions } from "@/components/hooks";
 import { LogoutIcon } from "@/components/icons";
 import { RulesCard } from "@/components/RulesCard";
 import { StatTile } from "@/components/StatTile";
+import { ApiStatusSection } from "@/components/ApiStatus";
 import { useToast } from "@/components/Toast";
 import { AVATAR_COLORS } from "@/lib/auth";
 import { dayKey } from "@/lib/dates";
@@ -16,7 +17,7 @@ import { formatPoints } from "@/lib/format";
 const HOUR = 3_600_000;
 
 export default function ProfilPage() {
-  const { user, repo, matches, now, timeOffset, setTimeOffset, logout, refreshUser, invalidate } = useApp();
+  const { user, repo, demo, now, timeOffset, setTimeOffset, logout, refreshUser, invalidate } = useApp();
   const { data } = useMyPredictions();
   const router = useRouter();
   const toast = useToast();
@@ -32,9 +33,10 @@ export default function ProfilPage() {
   }
 
   async function finishMatches(scope: "live" | "day") {
-    const day = await matches.getMatchesForDay(dayKey(now), now);
+    if (!demo) return;
+    const day = await demo.getMatchesForDay(dayKey(now), now);
     const targets = day.filter((m) => (scope === "live" ? m.status === "live" : m.status !== "finished"));
-    targets.forEach((m) => matches.finishNow(m.id));
+    targets.forEach((m) => demo.finishNow(m.id));
     invalidate();
     toast.show(targets.length ? `${targets.length} match(s) terminé(s)` : "Aucun match à terminer");
   }
@@ -91,6 +93,9 @@ export default function ProfilPage() {
       <div>
       <RulesCard className="mx-4 mt-4 md:mx-0 md:mt-0" />
 
+      {!demo ? (
+        <ApiStatusSection />
+      ) : (
       <Section title="Outils de démo">
         <p className="mb-3 text-xs text-muted">
           Les matchs et les cotes sont fictifs pour cette première version. Avance l&apos;horloge ou termine des matchs
@@ -109,7 +114,7 @@ export default function ProfilPage() {
           <DemoButton onClick={() => finishMatches("day")}>Simuler tous les résultats du jour</DemoButton>
           <DemoButton
             onClick={() => {
-              matches.clearOverrides();
+              demo.clearOverrides();
               shiftTime(0);
             }}
             className="col-span-2"
@@ -118,6 +123,7 @@ export default function ProfilPage() {
           </DemoButton>
         </div>
       </Section>
+      )}
 
       </div>
       {toast.node}

@@ -1,5 +1,5 @@
 import { SURFACE_LABELS } from "@/lib/data/tournaments";
-import { formatTime } from "@/lib/format";
+import { formatTime, joinInfo } from "@/lib/format";
 import type { MatchState } from "@/lib/types";
 import { ClockIcon } from "./icons";
 
@@ -13,15 +13,19 @@ export function MatchContext({ match, showContext }: { match: MatchState; showCo
             ? `${new Date(match.startTime).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })} · ${formatTime(match.startTime)}`
             : formatTime(match.startTime)}
         </span>
-        <span aria-hidden>·</span>
-        <span className="truncate">{showContext ? match.tournament.name : match.court}</span>
+        {(showContext ? match.tournament.name : match.court) && (
+          <>
+            <span aria-hidden>·</span>
+            <span className="truncate">{showContext ? match.tournament.name : match.court}</span>
+          </>
+        )}
         <span className="ml-auto shrink-0">
           <StatusBadge match={match} />
         </span>
       </div>
       {showContext && (
         <p className="px-4 text-[11px] text-muted">
-          {match.round} · {match.tour} · {SURFACE_LABELS[match.tournament.surface]}
+          {joinInfo(match.round, match.tour, SURFACE_LABELS[match.tournament.surface])}
         </p>
       )}
     </>

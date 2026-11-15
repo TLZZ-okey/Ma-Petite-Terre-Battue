@@ -36,6 +36,40 @@ vider les deux cases retire le prono.
   et colonne latérale (total, règles, mini-classement).
 - **PWA** : manifeste, icônes, service worker (installable sur l'écran d'accueil, pages consultables hors ligne).
 
+## Données réelles : The Odds API + SportScore
+
+L'app peut remplacer les matchs de démo par de vrais matchs :
+
+| Rôle | API | Coût gratuit |
+| --- | --- | --- |
+| Programme des matchs + cotes avant match | [The Odds API](https://the-odds-api.com) (clé gratuite) | 500 crédits / mois |
+| Scores et résultats | [SportScore](https://sportscore.com/developers/) (sans clé) | ~1 000 requêtes / 24 h / IP |
+
+**Mise en route**
+
+1. Crée un compte gratuit sur [the-odds-api.com](https://the-odds-api.com) pour recevoir ta clé par e-mail.
+2. Copie `.env.example` en `.env.local` et renseigne `ODDS_API_KEY`. Garde `NEXT_PUBLIC_MATCH_SOURCE=api`.
+3. Relance `npm run dev` (ou `npm run build && npm start`). La page **Profil → Données en direct** affiche l'état
+   de la connexion et le quota restant.
+
+**Fonctionnement**
+
+- Tout passe par le serveur Next.js (`app/api/matches`, `app/api/status`) : la clé n'arrive jamais dans le navigateur
+  et SportScore ne voit que l'adresse du serveur, jamais celle des joueurs.
+- Les cotes sont mises à jour au plus toutes les 6 h (≈ 1 crédit par tournoi actif), puis **figées au début du
+  match**. Cote retenue : médiane des bookmakers européens.
+- Les scores ne sont demandés à SportScore que s'il reste des matchs commencés sans résultat (toutes les 3 min au plus).
+- Les matchs vus sont gardés dans `.data/matches.json` (The Odds API ne renvoie plus un match terminé). Ce fichier
+  sera remplacé par la base de données.
+- The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500) et ne fournit ni classement ni
+  pays des joueurs : les avatars affichent alors leurs initiales.
+- La mention « Powered by SportScore » est obligatoire (conditions de l'offre gratuite) et s'affiche en bas des pages.
+- ⚠️ Le format de réponse de SportScore n'a pas pu être vérifié pendant le développement : sa lecture
+  (`lib/server/sportscore.ts`) est tolérante, et `/api/status` montre un échantillon brut de la dernière réponse
+  pour l'ajuster si besoin.
+
+Sans clé (ou avec `NEXT_PUBLIC_MATCH_SOURCE=mock`), l'app garde les matchs de démo et ses outils de simulation.
+
 ## Stack
 
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack) + React 19 + TypeScript
