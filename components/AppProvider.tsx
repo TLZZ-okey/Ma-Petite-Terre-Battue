@@ -10,7 +10,9 @@ import {
   type ReactNode,
 } from "react";
 import * as auth from "@/lib/auth";
+import { createApiProvider, MATCH_SOURCE } from "@/lib/providers/apiProvider";
 import { createMockProvider, type MockMatchProvider } from "@/lib/providers/mockProvider";
+import type { MatchProvider } from "@/lib/providers/types";
 import { createLocalRepository } from "@/lib/repository/localRepository";
 import type { Repository } from "@/lib/repository/types";
 import type { PublicUser } from "@/lib/types";
@@ -22,7 +24,11 @@ interface AppContextValue {
   /** false tant que les données locales n'ont pas été lues (évite les flashs à l'hydratation). */
   ready: boolean;
   repo: Repository;
-  matches: MockMatchProvider;
+  matches: MatchProvider;
+  /** Source des matchs : "api" (The Odds API + SportScore) ou "mock" (démo locale). */
+  source: "api" | "mock";
+  /** Outils de démo (terminer des matchs…) : uniquement avec la source "mock". */
+  demo: MockMatchProvider | null;
   user: PublicUser | null;
   login(username: string, password: string): Promise<void>;
   register(username: string, password: string): Promise<void>;
@@ -39,7 +45,7 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-type Services = { repo: Repository; matches: MockMatchProvider };
+type Services = { repo: Repository; matches: MatchProvider; demo: MockMatchProvider | null };
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Les services s'appuient sur localStorage : ils ne sont créés que côté navigateur,
@@ -56,8 +62,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       const storage = window.localStorage;
-      const created: Services = { repo: createLocalRepository(storage), matches: createMockProvider(storage) };
-      const offset = Number(storage.getItem(TIME_OFFSET_KEY) ?? 0) || 0;
+      const demo = MATCH_SOURCE === "mock" ? createMockProvider(storage) : null;
+      const created: Services = {
+        repo: createLocalRepository(storage),
+        matches: demo ?? createApiProvider(),
+        demo,
+      };
+      // Le décalage d'horloge n'a de sens qu'avec les matchs de démo.
+      const offset = demo ? Number(storage.getItem(TIME_OFFSET_KEY) ?? 0) || 0 : 0;
       const sessionId = storage.getItem(SESSION_KEY);
       const sessionUser = sessionId ? await created.repo.getUser(sessionId) : undefined;
       if (cancelled) return;
@@ -104,6 +116,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ready,
       repo: services.repo,
       matches: services.matches,
+      source: MATCH_SOURCE,
+      demo: services.demo,
       user,
       login: async (username, password) => startSession(await auth.login(services.repo, username, password)),
       register: async (username, password) => startSession(await auth.register(services.repo, username, password)),

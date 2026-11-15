@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { flag, formatPoints, shortName } from "@/lib/format";
+import { formatPoints, joinInfo, playerBadge, shortName } from "@/lib/format";
 import { oddsToPoints, predictionFromScore, scoreFromPrediction, setsToWin, validateSetScore } from "@/lib/scoring";
 import type { MatchState, Player, Prediction } from "@/lib/types";
 import { FinishedMatchCard } from "./FinishedMatchCard";
@@ -161,15 +161,19 @@ function PlayerBlock({ player }: { player: Player }) {
   return (
     <div className="flex min-w-0 flex-col items-center text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream text-2xl ring-2 ring-sand">
-        <span aria-hidden>{flag(player.country)}</span>
+        <span aria-hidden className={player.country ? "" : "text-sm font-bold text-rg-dark"}>
+          {playerBadge(player)}
+        </span>
       </span>
       <span className="mt-1.5 line-clamp-2 text-sm leading-tight font-semibold">
         <span className="sm:hidden">{shortName(player.name)}</span>
         <span className="hidden sm:inline">{player.name}</span>
       </span>
-      <span className="text-[11px] text-muted">
-        {player.country} · n°{player.ranking}
-      </span>
+      {(player.country || player.ranking) && (
+        <span className="text-[11px] text-muted">
+          {joinInfo(player.country, player.ranking && `n°${player.ranking}`)}
+        </span>
+      )}
     </div>
   );
 }

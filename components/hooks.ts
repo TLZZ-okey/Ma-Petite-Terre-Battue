@@ -6,16 +6,24 @@ import type { MatchState, Prediction } from "@/lib/types";
 import { useApp } from "./AppProvider";
 
 /** Exécute une fonction asynchrone à chaque changement de dépendances. */
-export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList): { data: T | undefined; loading: boolean } {
-  const [state, setState] = useState<{ data: T | undefined; loading: boolean }>({ data: undefined, loading: true });
+export function useAsync<T>(
+  fn: () => Promise<T>,
+  deps: DependencyList,
+): { data: T | undefined; loading: boolean; error: string | null } {
+  const [state, setState] = useState<{ data: T | undefined; loading: boolean; error: string | null }>({
+    data: undefined,
+    loading: true,
+    error: null,
+  });
   useEffect(() => {
     let cancelled = false;
     setState((s) => ({ ...s, loading: true }));
     fn().then(
-      (data) => !cancelled && setState({ data, loading: false }),
+      (data) => !cancelled && setState({ data, loading: false, error: null }),
       (error) => {
         console.error(error);
-        if (!cancelled) setState((s) => ({ ...s, loading: false }));
+        if (!cancelled)
+          setState((s) => ({ ...s, loading: false, error: error instanceof Error ? error.message : String(error) }));
       },
     );
     return () => {

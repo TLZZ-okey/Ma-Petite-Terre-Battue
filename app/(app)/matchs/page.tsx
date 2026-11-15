@@ -11,7 +11,7 @@ import { RulesCard } from "@/components/RulesCard";
 import { usePredict } from "@/components/usePredict";
 import { SURFACE_LABELS } from "@/lib/data/tournaments";
 import { dayKey, parseDayKey } from "@/lib/dates";
-import { formatDayLong, formatPoints } from "@/lib/format";
+import { formatDayLong, formatPoints, joinInfo } from "@/lib/format";
 import type { MatchState, Tour } from "@/lib/types";
 
 type TourFilter = "Tous" | Tour;
@@ -23,7 +23,7 @@ export default function MatchsPage() {
   const [showRules, setShowRules] = useState(false);
   const { busyId, predict, toastNode } = usePredict();
 
-  const { data: dayMatches, loading } = useAsync(
+  const { data: dayMatches, loading, error } = useAsync(
     () => matches.getMatchesForDay(day, now),
     [day, now.getTime(), dataVersion],
   );
@@ -83,6 +83,12 @@ export default function MatchsPage() {
 
       {showRules && <RulesCard className="mx-4 mt-4 md:mx-0 lg:hidden" />}
 
+      {error && (
+        <p role="alert" className="mx-4 mt-4 rounded-xl bg-live/10 px-4 py-3 text-sm font-semibold text-live md:mx-0">
+          {error}
+        </p>
+      )}
+
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-6">
       <div className="min-w-0">
       <div className="flex items-baseline justify-between px-4 pt-4 md:px-0 md:pt-6">
@@ -116,7 +122,7 @@ export default function MatchsPage() {
                 <div className="min-w-0 flex-1 leading-tight">
                   <p className="truncate text-sm font-extrabold">{t.name}</p>
                   <p className="text-[11px] text-white/75">
-                    {group[0].tour} · {t.category} · {t.city} · {group[0].round}
+                    {joinInfo(group[0].tour, t.category, t.city, group[0].round)}
                   </p>
                 </div>
                 <span

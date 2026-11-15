@@ -17,6 +17,16 @@ export function formatDateShort(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 }
 
+/** Joint les éléments non vides avec « · » (les données d'API peuvent être incomplètes). */
+export function joinInfo(...parts: Array<string | number | null | undefined | false>): string {
+  return parts.filter((p) => p !== null && p !== undefined && p !== false && p !== "").join(" · ");
+}
+
+/** Drapeau emoji à partir d'un code pays ISO alpha-2 (initiales si le pays est inconnu). */
+export function playerBadge(player: { country: string; name: string }): string {
+  return player.country ? flag(player.country) : initials(player.name);
+}
+
 /** Drapeau emoji à partir d'un code pays ISO alpha-2. */
 export function flag(country: string): string {
   return country

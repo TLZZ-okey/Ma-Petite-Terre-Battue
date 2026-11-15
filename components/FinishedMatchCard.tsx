@@ -1,4 +1,4 @@
-import { flag, pts, shortName } from "@/lib/format";
+import { playerBadge, pts, shortName } from "@/lib/format";
 import { scoreFromPrediction, scorePrediction, setsToWin } from "@/lib/scoring";
 import type { MatchState, Player, Prediction } from "@/lib/types";
 import { CheckIcon } from "./icons";
@@ -109,8 +109,11 @@ function ScoreRow({
         won ? "bg-rg-light text-rg-dark" : "text-muted"
       }`}
     >
-      <span className="text-xl" aria-hidden>
-        {flag(player.country)}
+      <span
+        className={`flex h-7 w-7 shrink-0 items-center justify-center ${player.country ? "text-xl" : "rounded-full bg-cream text-[10px] font-bold text-rg-dark"}`}
+        aria-hidden
+      >
+        {playerBadge(player)}
       </span>
       <span className={`min-w-0 flex-1 truncate text-sm ${won ? "font-extrabold" : "font-medium"}`}>
         <span className="sm:hidden">{shortName(player.name)}</span>
