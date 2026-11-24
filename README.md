@@ -26,7 +26,7 @@ vider les deux cases retire le prono.
 ## Version 1 (actuelle) : 100 % locale
 
 - **Pas d'API externe** : un générateur déterministe (`lib/mock/generator.ts`) produit un programme de matchs fictif
-  (tournois ATP/WTA, joueurs, cotes, horaires) pour chaque jour. Les résultats sont simulés une fois l'heure du match passée,
+  (tableau masculin de Roland-Garros uniquement, joueurs, cotes, horaires) pour chaque jour. Les résultats sont simulés une fois l'heure du match passée,
   pondérés par les cotes.
 - **Pas d'e-mail** : comptes locaux pseudo + mot de passe (haché SHA-256 salé). Comptes et pronos sont stockés dans le
   `localStorage` du navigateur — tous les joueurs d'un même appareil partagent le classement.
@@ -63,9 +63,11 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 - Les scores ne sont demandés à SportScore que s'il reste des matchs commencés sans résultat (toutes les 3 min au plus).
 - Les matchs vus sont gardés dans `.data/matches.json` (The Odds API ne renvoie plus un match terminé). Ce fichier
   sera remplacé par la base de données.
+- **Circuits suivis** : pour l'instant uniquement l'ATP (réglage `ENABLED_TOURS` dans `lib/settings.ts`). Les
+  tournois WTA ne sont ni interrogés (aucun crédit dépensé) ni affichés. Pour les réactiver : `["ATP", "WTA"]`.
 - The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500), **pas la Coupe Davis**, et ne
   fournit ni classement ni pays des joueurs.
-- Classement et nationalité viennent d'ESPN (150 premiers ATP et WTA, rafraîchis chaque lundi à partir de 12:00 UTC, jour de publication des classements), rapprochés par
+- Classement et nationalité viennent d'ESPN (150 premiers ATP, rafraîchis chaque lundi à partir de 12:00 UTC, jour de publication des classements), rapprochés par
   nom complet. Un joueur hors des 150 premiers garde ses initiales à la place du drapeau. Cette API n'est pas
   officielle et peut changer sans préavis : en cas d'échec, l'app garde le dernier classement connu.
 - La mention « Powered by SportScore » est obligatoire (conditions de l'offre gratuite) et s'affiche en bas des pages.

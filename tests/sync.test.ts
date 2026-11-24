@@ -71,7 +71,7 @@ describe("synchronisation The Odds API + SportScore", () => {
 
     // 1. Import avant le match.
     let data = await refresh(cfg);
-    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0, details: 0, rankings: 2 });
+    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0, details: 0, rankings: 1 }); // ESPN : ATP seulement
     expect(data.meta.quota).toEqual({ remaining: 498, used: 2 });
     expect(toMatchState(data.matches.toa_e1, now)).toMatchObject({ status: "upcoming", odds1: 1.22 });
 
@@ -82,7 +82,7 @@ describe("synchronisation The Odds API + SportScore", () => {
 
     // Les classements ne sont pas redemandés dans la même semaine.
     await refresh(cfg);
-    expect(calls.rankings).toBe(2);
+    expect(calls.rankings).toBe(1);
 
     // 2. Rappel immédiat : aucune nouvelle requête (cache).
     await refresh(cfg);
@@ -149,17 +149,17 @@ describe("synchronisation The Odds API + SportScore", () => {
     const cfg: SyncConfig = { apiKey: undefined, fetcher, store: createMemoryStore(), oddsTtlMs: HOUR, scoresTtlMs: HOUR, now: () => now };
 
     await refresh(cfg);
-    expect(calls.rankings).toBe(2);
+    expect(calls.rankings).toBe(1);
 
     now = new Date("2026-11-29T20:00:00Z"); // dimanche : rien
     await refresh(cfg);
-    expect(calls.rankings).toBe(2);
+    expect(calls.rankings).toBe(1);
 
     // Lundi 12:30 UTC, mais ESPN est en panne : échec, ancien classement conservé.
     now = new Date("2026-11-30T12:30:00Z");
     espnDown = true;
     let data = await refresh(cfg);
-    expect(calls.rankings).toBe(2); // les 503 ne passent pas par le compteur du faux serveur
+    expect(calls.rankings).toBe(1); // les 503 ne passent pas par le compteur du faux serveur
     expect(data.rankings.tables.ATP?.players.length).toBeGreaterThan(0);
     expect(data.meta.lastError).toContain("ESPN");
 
@@ -167,12 +167,12 @@ describe("synchronisation The Odds API + SportScore", () => {
     now = new Date("2026-11-30T12:50:00Z");
     espnDown = false;
     await refresh(cfg);
-    expect(calls.rankings).toBe(2);
+    expect(calls.rankings).toBe(1);
 
     // 1 h après l'échec : nouvelle tentative réussie.
     now = new Date("2026-11-30T13:31:00Z");
     data = await refresh(cfg);
-    expect(calls.rankings).toBe(4);
+    expect(calls.rankings).toBe(2);
     expect(data.rankings.fetchedAt).toBe("2026-11-30T13:31:00.000Z");
   });
 

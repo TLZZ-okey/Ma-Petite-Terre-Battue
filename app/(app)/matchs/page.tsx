@@ -13,6 +13,7 @@ import { usePredict } from "@/components/usePredict";
 import { SURFACE_LABELS } from "@/lib/data/tournaments";
 import { dayKey, parseDayKey } from "@/lib/dates";
 import { formatDayLong, formatPoints, joinInfo } from "@/lib/format";
+import { ENABLED_TOURS } from "@/lib/settings";
 import type { MatchState, Tour } from "@/lib/types";
 
 type TourFilter = "Tous" | Tour;
@@ -57,8 +58,9 @@ export default function MatchsPage() {
     <div>
       <div className="sticky top-[calc(60px+env(safe-area-inset-top))] z-20 border-b border-sand bg-cream/95 backdrop-blur md:pt-2">
         <DayPicker now={now} value={day} onChange={setDay} counts={countsByDay} />
-        <div className="flex items-center gap-2 px-4 pb-3 md:px-0">
-          {(["Tous", "ATP", "WTA"] as const).map((f) => (
+        <div className={`flex items-center gap-2 px-4 pb-3 md:px-0 ${ENABLED_TOURS.length > 1 ? "" : "lg:hidden"}`}>
+          {/* Filtre par circuit, utile seulement si plusieurs circuits sont suivis. */}
+          {(ENABLED_TOURS.length > 1 ? (["Tous", ...ENABLED_TOURS] as TourFilter[]) : []).map((f) => (
             <button
               key={f}
               type="button"

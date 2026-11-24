@@ -28,6 +28,8 @@ describe("The Odds API", () => {
       activeTennisKeys([
         { key: "tennis_atp_french_open", group: "Tennis", title: "", description: "", active: true, has_outrights: false },
         { key: "tennis_wta_french_open", group: "Tennis", title: "", description: "", active: false, has_outrights: false },
+        // Circuit WTA désactivé (lib/settings.ts) : jamais interrogé, même actif.
+        { key: "tennis_wta_wimbledon", group: "Tennis", title: "", description: "", active: true, has_outrights: false },
         { key: "tennis_atp_french_open_winner", group: "Tennis", title: "", description: "", active: true, has_outrights: true },
         { key: "soccer_epl", group: "Soccer", title: "", description: "", active: true, has_outrights: false },
       ]),
