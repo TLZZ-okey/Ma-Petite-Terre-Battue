@@ -17,6 +17,11 @@ export async function GET() {
     lastError: data.meta.lastError,
     activeTournaments: data.meta.activeTournaments,
     matches: { total: matches.length, withResult: matches.filter((m) => m.result).length },
+    rankings: {
+      fetchedAt: data.rankings.fetchedAt,
+      atp: { updated: data.rankings.tables.ATP?.updated ?? null, players: data.rankings.tables.ATP?.players.length ?? 0 },
+      wta: { updated: data.rankings.tables.WTA?.updated ?? null, players: data.rankings.tables.WTA?.players.length ?? 0 },
+    },
     scoresSample: data.meta.scoresSample,
   });
 }

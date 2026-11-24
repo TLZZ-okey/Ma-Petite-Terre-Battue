@@ -1,7 +1,8 @@
 import { setsToWin } from "../scoring";
-import type { MatchResult, MatchState } from "../types";
+import type { MatchResult, MatchState, Tour } from "../types";
 import type { MatchStore, StoreData, StoredMatch } from "./matchStore";
 import { activeTennisKeys, eventToMatch, getTennisOdds, listSports, type Fetcher } from "./oddsApi";
+import { enrichPlayer, fetchRankings } from "./rankings";
 import { fetchTennisMatch, fetchTennisMatches, findScoreMatch, matchSlug, type ScoreMatch } from "./sportscore";
 
 export interface SyncConfig {
@@ -12,6 +13,8 @@ export interface SyncConfig {
   oddsTtlMs: number;
   /** Délai minimal entre deux mises à jour des scores (SportScore). */
   scoresTtlMs: number;
+  /** Délai minimal entre deux mises à jour des classements (ESPN). Défaut : 24 h. */
+  rankingsTtlMs?: number;
   now?: () => Date;
 }
 
@@ -142,6 +145,19 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
     changed = true;
   }
 
+  if (isStale(data.rankings.fetchedAt, cfg.rankingsTtlMs ?? 24 * 3600_000, now)) {
+    // Chaque circuit séparément : une erreur sur l'un garde l'ancien classement de l'autre.
+    for (const tour of ["ATP", "WTA"] as Tour[]) {
+      try {
+        data.rankings.tables[tour] = await fetchRankings(cfg.fetcher, tour);
+      } catch (e) {
+        errors.push(describeError(e));
+      }
+    }
+    data.rankings.fetchedAt = now.toISOString();
+    changed = true;
+  }
+
   if (needsScores(data, now) && isStale(data.meta.lastScoresSync, cfg.scoresTtlMs, now)) {
     try {
       await syncScores(cfg, data, now);
@@ -159,10 +175,16 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
   return data;
 }
 
-/** Statut d'un match à l'instant `now`. */
-export function toMatchState({ match, result }: StoredMatch, now: Date): MatchState {
-  if (result) return { ...match, status: "finished", result };
-  return { ...match, status: Date.parse(match.startTime) <= now.getTime() ? "live" : "upcoming", result: null };
+/**
+ * Statut d'un match à l'instant `now`, avec classement et nationalité des joueurs
+ * (appliqués à la lecture : les matchs déjà stockés profitent du dernier classement).
+ */
+export function toMatchState({ match, result }: StoredMatch, now: Date, rankings?: StoreData["rankings"]): MatchState {
+  const enriched = rankings
+    ? { ...match, player1: enrichPlayer(match.player1, rankings.tables), player2: enrichPlayer(match.player2, rankings.tables) }
+    : match;
+  if (result) return { ...enriched, status: "finished", result };
+  return { ...enriched, status: Date.parse(match.startTime) <= now.getTime() ? "live" : "upcoming", result: null };
 }
 
 /** Réinitialise le verrou (tests uniquement). */

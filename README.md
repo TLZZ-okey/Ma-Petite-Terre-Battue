@@ -44,6 +44,7 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 | --- | --- | --- |
 | Programme des matchs + cotes avant match | [The Odds API](https://the-odds-api.com) (clé gratuite) | 500 crédits / mois |
 | Scores et résultats | [SportScore](https://sportscore.com/developers/) (sans clé) | ~1 000 requêtes / 24 h / IP |
+| Classements et nationalités | API publique d'ESPN (sans clé, non officielle) | 2 requêtes / jour |
 
 **Mise en route**
 
@@ -62,8 +63,11 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 - Les scores ne sont demandés à SportScore que s'il reste des matchs commencés sans résultat (toutes les 3 min au plus).
 - Les matchs vus sont gardés dans `.data/matches.json` (The Odds API ne renvoie plus un match terminé). Ce fichier
   sera remplacé par la base de données.
-- The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500) et ne fournit ni classement ni
-  pays des joueurs : les avatars affichent alors leurs initiales.
+- The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500), **pas la Coupe Davis**, et ne
+  fournit ni classement ni pays des joueurs.
+- Classement et nationalité viennent d'ESPN (150 premiers ATP et WTA, rafraîchis une fois par jour), rapprochés par
+  nom complet. Un joueur hors des 150 premiers garde ses initiales à la place du drapeau. Cette API n'est pas
+  officielle et peut changer sans préavis : en cas d'échec, l'app garde le dernier classement connu.
 - La mention « Powered by SportScore » est obligatoire (conditions de l'offre gratuite) et s'affiche en bas des pages.
 - Le format de SportScore a été vérifié sur l'API réelle (extrait dans `tests/fixtures/`). Il ne donne que le nombre
   de sets gagnés (pas le score de chaque set). Si un match sort de la liste des 50 derniers matchs, son détail est

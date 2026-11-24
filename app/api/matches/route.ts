@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   }
 
   const matches = stored
-    .map((s) => toMatchState(s, now))
+    .map((s) => toMatchState(s, now, data.rankings))
     .sort((a, b) => a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id));
   return Response.json({ matches, warning: data.meta.lastError });
 }

@@ -160,7 +160,10 @@ function OpenMatchCard({ match, prediction, busy, onPredict, showContext }: Matc
 function PlayerBlock({ player }: { player: Player }) {
   return (
     <div className="flex min-w-0 flex-col items-center text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream text-2xl ring-2 ring-sand">
+      <span
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-cream text-2xl ring-2 ring-sand"
+        title={player.countryName || undefined}
+      >
         <span aria-hidden className={player.country ? "" : "text-sm font-bold text-rg-dark"}>
           {playerBadge(player)}
         </span>

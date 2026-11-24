@@ -1,0 +1,109 @@
+{
+ "rankings": [
+  {
+   "name": "ATP",
+   "type": "atp",
+   "update": "2026-11-19T08:00Z",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 10350.0,
+     "athlete": {
+      "id": "2375",
+      "firstName": "Alexander",
+      "lastName": "Zverev",
+      "displayName": "Alexander Zverev",
+      "shortname": "A. Zverev",
+      "flagAltText": "Germany",
+      "citizenshipCountry": "GER"
+     }
+    },
+    {
+     "current": 2,
+     "previous": 2,
+     "points": 7950.0,
+     "athlete": {
+      "id": "3623",
+      "firstName": "Jannik",
+      "lastName": "Sinner",
+      "displayName": "Jannik Sinner",
+      "shortname": "J. Sinner",
+      "flagAltText": "Italy",
+      "citizenshipCountry": "ITA"
+     }
+    },
+    {
+     "current": 12,
+     "previous": 12,
+     "points": 2940.0,
+     "athlete": {
+      "id": "296",
+      "firstName": "Novak",
+      "lastName": "Djokovic",
+      "displayName": "Novak Djokovic",
+      "shortname": "N. Djokovic",
+      "flagAltText": "Serbia",
+      "citizenshipCountry": "SER"
+     }
+    },
+    {
+     "current": 17,
+     "previous": 17,
+     "points": 2465.0,
+     "athlete": {
+      "id": "3209",
+      "firstName": "Felix",
+      "lastName": "Auger-Aliassime",
+      "displayName": "Felix Auger-Aliassime",
+      "shortname": "F. Auger-Aliassime",
+      "flagAltText": "Canada",
+      "citizenshipCountry": "CAN"
+     }
+    },
+    {
+     "current": 20,
+     "previous": 20,
+     "points": 2220.0,
+     "athlete": {
+      "id": "3700",
+      "firstName": "Francisco",
+      "lastName": "Cerundolo",
+      "displayName": "Francisco Cerundolo",
+      "shortname": "F. Cerundolo",
+      "flagAltText": "Argentina",
+      "citizenshipCountry": "ARG"
+     }
+    },
+    {
+     "current": 54,
+     "previous": 54,
+     "points": 1015.0,
+     "athlete": {
+      "id": "4008",
+      "firstName": "Juan Manuel",
+      "lastName": "Cerundolo",
+      "displayName": "Juan Manuel Cerundolo",
+      "shortname": "J. Cerundolo",
+      "flagAltText": "Argentina",
+      "citizenshipCountry": "ARG"
+     }
+    },
+    {
+     "current": 94,
+     "previous": 93,
+     "points": 646.0,
+     "athlete": {
+      "id": "11382",
+      "firstName": "Yunchaokete",
+      "lastName": "Bu",
+      "displayName": "Bu Yunchaokete",
+      "shortname": "B. Yunchaokete",
+      "flagAltText": "China",
+      "citizenshipCountry": "CHN"
+     }
+    }
+   ]
+  }
+ ]
+}

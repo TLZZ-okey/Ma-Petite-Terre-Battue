@@ -23,6 +23,8 @@ export interface Player {
   country: string;
   /** Classement mondial ; null si inconnu (données d'API sans classement). */
   ranking: number | null;
+  /** Nom du pays en clair (ex. « Italy »), si connu. */
+  countryName?: string;
   tour: Tour;
 }
 

@@ -12,6 +12,11 @@ interface Status {
   lastError: string | null;
   activeTournaments: string[];
   matches: { total: number; withResult: number };
+  rankings?: {
+    fetchedAt: string | null;
+    atp: { updated: string | null; players: number };
+    wta: { updated: string | null; players: number };
+  };
 }
 
 const when = (iso: string | null) =>
@@ -30,8 +35,8 @@ export function ApiStatusSection() {
     <section className="mx-4 mt-4 rounded-2xl border border-sand bg-white p-4 shadow-sm md:mx-0">
       <h2 className="mb-3 text-sm font-extrabold tracking-wide text-rg-dark uppercase">Données en direct</h2>
       <p className="mb-3 text-xs text-muted">
-        Programme et cotes : <strong>The Odds API</strong>. Scores : <strong>SportScore</strong>. Les cotes sont figées au
-        début de chaque match.
+        Programme et cotes : <strong>The Odds API</strong>. Scores : <strong>SportScore</strong>. Classements et
+        nationalités : <strong>ESPN</strong> (150 premiers ATP et WTA). Les cotes sont figées au début de chaque match.
       </p>
       {error && <p className="mb-2 rounded-lg bg-live/10 px-3 py-2 text-xs font-semibold text-live">{error}</p>}
       {data && (
@@ -47,6 +52,14 @@ export function ApiStatusSection() {
           <dt className="text-muted">Scores mis à jour</dt>
           <dd className="font-semibold">
             {when(data.lastScoresSync)} · toutes les {data.refresh.scoresMinutes} min
+          </dd>
+          <dt className="text-muted">Classements</dt>
+          <dd className="font-semibold">
+            {data.rankings?.atp.players || data.rankings?.wta.players
+              ? `ATP ${data.rankings.atp.players} · WTA ${data.rankings.wta.players} joueurs (ESPN, ${when(
+                  data.rankings.atp.updated ?? data.rankings.wta.updated,
+                )})`
+              : "pas encore chargés"}
           </dd>
           <dt className="text-muted">Tournois suivis</dt>
           <dd className="font-semibold">{data.activeTournaments.length || "aucun pour l'instant"}</dd>
