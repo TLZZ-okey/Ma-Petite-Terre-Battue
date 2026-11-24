@@ -10,7 +10,8 @@ import {
 } from "../lib/scoring";
 import type { MatchState } from "../lib/types";
 
-const base = generateDay("2026-11-09")[0];
+// Les règles de score sont testées sur un match en 2 sets gagnants (le mock est en 3 sets gagnants).
+const base = { ...generateDay("2026-11-09")[0], bestOf: 3 as const };
 
 function finished(winnerId: string, sets: number): MatchState {
   return { ...base, odds1: 1.8, odds2: 2.1, status: "finished", result: { winnerId, sets, score: [] } };
@@ -80,6 +81,17 @@ describe("score en sets", () => {
 });
 
 describe("générateur de matchs", () => {
+  it("ne propose que le tableau masculin de Roland-Garros (3 sets gagnants)", () => {
+    for (const day of ["2026-11-09", "2026-11-12", "2026-11-14", "2026-11-15", "2027-03-03"]) {
+      for (const m of generateDay(day)) {
+        expect(m.tour).toBe("ATP");
+        expect(m.tournament.name).toBe("Roland-Garros");
+        expect(m.tournament.surface).toBe("terre-battue");
+        expect(m.bestOf).toBe(5);
+      }
+    }
+  });
+
   it("est déterministe", () => {
     expect(generateDay("2026-11-11")).toEqual(generateDay("2026-11-11"));
   });

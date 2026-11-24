@@ -1,5 +1,6 @@
 import { syncConfig } from "@/lib/server/config";
 import { refresh, toMatchState } from "@/lib/server/sync";
+import { isTourEnabled } from "@/lib/settings";
 
 // Données toujours fraîches : jamais de mise en cache de la réponse.
 export const dynamic = "force-dynamic";
@@ -20,7 +21,8 @@ export async function GET(request: Request) {
 
   const data = await refresh(cfg);
   const now = new Date();
-  let stored = Object.values(data.matches);
+  // Les matchs d'un circuit désactivé (ex. WTA déjà stockés) ne sont plus servis.
+  let stored = Object.values(data.matches).filter((s) => isTourEnabled(s.match.tour));
 
   const ids = params.get("ids");
   if (ids !== null) {

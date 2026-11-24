@@ -31,33 +31,6 @@ const atp: Array<[string, string, number]> = [
   ["Corentin Moutet", "FR", 45],
 ];
 
-const wta: Array<[string, string, number]> = [
-  ["Aryna Sabalenka", "BY", 1],
-  ["Iga Swiatek", "PL", 2],
-  ["Coco Gauff", "US", 3],
-  ["Jessica Pegula", "US", 4],
-  ["Elena Rybakina", "KZ", 5],
-  ["Mirra Andreeva", "RU", 6],
-  ["Jasmine Paolini", "IT", 7],
-  ["Madison Keys", "US", 8],
-  ["Qinwen Zheng", "CN", 9],
-  ["Amanda Anisimova", "US", 10],
-  ["Emma Navarro", "US", 11],
-  ["Paula Badosa", "ES", 12],
-  ["Elina Svitolina", "UA", 13],
-  ["Karolina Muchova", "CZ", 14],
-  ["Diana Shnaider", "RU", 15],
-  ["Clara Tauson", "DK", 17],
-  ["Ons Jabeur", "TN", 20],
-  ["Leylah Fernandez", "CA", 23],
-  ["Naomi Osaka", "JP", 25],
-  ["Victoria Mboko", "CA", 27],
-  ["Loïs Boisson", "FR", 34],
-  ["Caroline Garcia", "FR", 42],
-  ["Varvara Gracheva", "FR", 55],
-  ["Diane Parry", "FR", 68],
-];
-
 function slug(name: string): string {
   return name
     .normalize("NFD")
@@ -77,13 +50,11 @@ function build(list: Array<[string, string, number]>, tour: Tour): Player[] {
   }));
 }
 
-export const PLAYERS: Record<Tour, Player[]> = {
-  ATP: build(atp, "ATP"),
-  WTA: build(wta, "WTA"),
-};
+/** Joueurs du tableau de démonstration (circuit ATP uniquement). */
+export const PLAYERS: Player[] = build(atp, "ATP");
 
 const byId = new Map<string, Player>(
-  [...PLAYERS.ATP, ...PLAYERS.WTA].map((p) => [p.id, p]),
+  PLAYERS.map((p) => [p.id, p]),
 );
 
 export function getPlayer(id: string): Player | undefined {

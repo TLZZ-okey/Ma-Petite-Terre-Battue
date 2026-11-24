@@ -1,5 +1,6 @@
 import { setsToWin } from "../scoring";
-import type { MatchResult, MatchState, Tour } from "../types";
+import { ENABLED_TOURS } from "../settings";
+import type { MatchResult, MatchState } from "../types";
 import type { MatchStore, StoreData, StoredMatch } from "./matchStore";
 import { activeTennisKeys, eventToMatch, getTennisOdds, listSports, type Fetcher } from "./oddsApi";
 import { enrichPlayer, fetchRankings, rankingsDue } from "./rankings";
@@ -147,7 +148,7 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
   if (rankingsDue(data.rankings, now)) {
     let ok = true;
     // Chaque circuit séparément : une erreur sur l'un garde l'ancien classement de l'autre.
-    for (const tour of ["ATP", "WTA"] as Tour[]) {
+    for (const tour of ENABLED_TOURS) {
       try {
         data.rankings.tables[tour] = await fetchRankings(cfg.fetcher, tour);
       } catch (e) {

@@ -1,3 +1,4 @@
+import { isTourEnabled } from "../settings";
 import type { Match, Player, Tour, Tournament, TournamentCategory, Surface } from "../types";
 
 /**
@@ -87,9 +88,14 @@ export async function getTennisOdds(fetcher: Fetcher, apiKey: string, sportKey: 
   return getJson<OddsApiEvent[]>(fetcher, url);
 }
 
-/** Tournois de tennis actifs (matchs à venir), hors paris « vainqueur du tournoi ». */
+/**
+ * Tournois de tennis actifs (matchs à venir), hors paris « vainqueur du tournoi »,
+ * limités aux circuits suivis (voir lib/settings.ts) : aucun crédit dépensé pour les autres.
+ */
 export function activeTennisKeys(sports: OddsApiSport[]): string[] {
-  return sports.filter((s) => s.active && !s.has_outrights && s.key.startsWith("tennis_")).map((s) => s.key);
+  return sports
+    .filter((s) => s.active && !s.has_outrights && s.key.startsWith("tennis_") && isTourEnabled(tourFromKey(s.key)))
+    .map((s) => s.key);
 }
 
 function median(values: number[]): number | null {

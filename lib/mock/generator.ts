@@ -1,6 +1,6 @@
 import { PLAYERS } from "../data/players";
-import { TOURNAMENTS } from "../data/tournaments";
-import { parseDayKey, weekIndex, weekday } from "../dates";
+import { MOCK_TOURNAMENT } from "../data/tournaments";
+import { parseDayKey, weekday } from "../dates";
 import { createRng, shuffle } from "../random";
 import type { Match, MatchResult, MatchState, Player, Tour } from "../types";
 
@@ -9,9 +9,9 @@ import type { Match, MatchResult, MatchState, Player, Tour } from "../types";
  * un même jour produit toujours les mêmes matchs, les mêmes cotes
  * et (une fois le match terminé) le même résultat. Aucune donnée n'a
  * donc besoin d'être stockée et tous les appareils voient le même programme.
+ *
+ * Pour l'instant, seul le tableau masculin de Roland-Garros est simulé, chaque semaine.
  */
-
-const TOURS: Tour[] = ["ATP", "WTA"];
 
 /** Programme type selon le jour de la semaine (lundi = 0). */
 const DAY_PROGRAM: Array<{ round: string; count: number }> = [
@@ -24,19 +24,10 @@ const DAY_PROGRAM: Array<{ round: string; count: number }> = [
   { round: "Finale", count: 1 },
 ];
 
-const SLOTS: Record<Tour, Array<[number, number]>> = {
-  ATP: [[11, 0], [13, 30], [16, 0], [20, 0]],
-  WTA: [[12, 0], [14, 30], [17, 30], [19, 0]],
-};
-const SHORT_DAY_SLOTS: Record<Tour, Array<[number, number]>> = {
-  ATP: [[15, 0], [20, 0]],
-  WTA: [[13, 0], [17, 30]],
-};
+const SLOTS: Array<[number, number]> = [[11, 0], [13, 30], [16, 0], [20, 0]];
+const SHORT_DAY_SLOTS: Array<[number, number]> = [[15, 0], [20, 0]];
 
-const COURTS: Record<string, string[]> = {
-  "Grand Chelem": ["Court Philippe-Chatrier", "Court Suzanne-Lenglen", "Court Simonne-Mathieu", "Court 14"],
-  default: ["Court Central", "Court 1", "Court 2", "Court 3"],
-};
+const COURTS = ["Court Philippe-Chatrier", "Court Suzanne-Lenglen", "Court Simonne-Mathieu", "Court 14"];
 
 const BOOKMAKER_MARGIN = 1.06;
 
@@ -67,43 +58,37 @@ export function probabilityToOdds(p: number): number {
 /** Génère tous les matchs d'un jour donné (clé YYYY-MM-DD). */
 export function generateDay(day: string): Match[] {
   const date = parseDayKey(day);
-  const week = weekIndex(date);
   const program = DAY_PROGRAM[weekday(date)];
+  const tournament = MOCK_TOURNAMENT;
+  const tour = "ATP" as const;
+  const rng = createRng(`${day}:${tour}`);
+  const players = shuffle(rng, PLAYERS);
+  const slots = program.count <= 2 ? SHORT_DAY_SLOTS : SLOTS;
   const matches: Match[] = [];
 
-  for (const tour of TOURS) {
-    const tournaments = TOURNAMENTS[tour];
-    const tournament = tournaments[(week + (tour === "WTA" ? 3 : 0)) % tournaments.length];
-    const rng = createRng(`${day}:${tour}`);
-    const players = shuffle(rng, PLAYERS[tour]);
-    const slots = program.count <= 2 ? SHORT_DAY_SLOTS[tour] : SLOTS[tour];
-    const courts = COURTS[tournament.category] ?? COURTS.default;
+  for (let i = 0; i < program.count; i++) {
+    const player1 = players[i * 2];
+    const player2 = players[i * 2 + 1];
+    const p = winProbability(player1, player2, (rng() - 0.5) * 0.12);
+    const [h, min] = slots[i % slots.length];
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, min);
 
-    for (let i = 0; i < program.count; i++) {
-      const player1 = players[i * 2];
-      const player2 = players[i * 2 + 1];
-      const p = winProbability(player1, player2, (rng() - 0.5) * 0.12);
-      const [h, min] = slots[i % slots.length];
-      const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, min);
-      const bestOf: 3 | 5 = tournament.category === "Grand Chelem" && tour === "ATP" ? 5 : 3;
-
-      matches.push({
-        id: matchId(day, tour, i),
-        tournament,
-        tour,
-        round: program.round,
-        court: program.count === 1 ? courts[0] : courts[i % courts.length],
-        startTime: start.toISOString(),
-        bestOf,
-        player1,
-        player2,
-        odds1: probabilityToOdds(p),
-        odds2: probabilityToOdds(1 - p),
-      });
-    }
+    matches.push({
+      id: matchId(day, tour, i),
+      tournament,
+      tour,
+      round: program.round,
+      court: program.count === 1 ? COURTS[0] : COURTS[i % COURTS.length],
+      startTime: start.toISOString(),
+      bestOf: 5, // Grand Chelem masculin : 3 sets gagnants
+      player1,
+      player2,
+      odds1: probabilityToOdds(p),
+      odds2: probabilityToOdds(1 - p),
+    });
   }
 
-  return matches.sort((a, b) => a.startTime.localeCompare(b.startTime) || a.id.localeCompare(b.id));
+  return matches;
 }
 
 export function generateMatch(id: string): Match | undefined {
