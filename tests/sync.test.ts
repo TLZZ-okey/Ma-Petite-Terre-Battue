@@ -80,7 +80,7 @@ describe("synchronisation The Odds API + SportScore", () => {
     expect(enriched.player1).toMatchObject({ name: "Jannik Sinner", ranking: 2, country: "IT" });
     expect(enriched.player2).toMatchObject({ name: "Arthur Fils", ranking: null, country: "" });
 
-    // Les classements ne sont redemandés qu'une fois par jour.
+    // Les classements ne sont pas redemandés dans la même semaine.
     await refresh(cfg);
     expect(calls.rankings).toBe(2);
 
@@ -138,6 +138,42 @@ describe("synchronisation The Odds API + SportScore", () => {
     const data = await refresh(cfg);
     expect(calls.details).toBe(1);
     expect(data.matches.toa_e1.result).toEqual({ winnerId: "atp-jannik-sinner", sets: 3, score: [] });
+  });
+
+  it("rafraîchit les classements le lundi suivant, et retente après un échec d'ESPN", async () => {
+    let now = new Date("2026-11-24T19:00:00Z"); // mardi
+    let espnDown = false;
+    const { fetcher: base, calls } = fakeApis({ events: () => [], scores: () => [] });
+    const fetcher: Fetcher = async (url, init) =>
+      espnDown && new URL(url).hostname === "site.api.espn.com" ? new Response("{}", { status: 503 }) : base(url, init);
+    const cfg: SyncConfig = { apiKey: undefined, fetcher, store: createMemoryStore(), oddsTtlMs: HOUR, scoresTtlMs: HOUR, now: () => now };
+
+    await refresh(cfg);
+    expect(calls.rankings).toBe(2);
+
+    now = new Date("2026-11-29T20:00:00Z"); // dimanche : rien
+    await refresh(cfg);
+    expect(calls.rankings).toBe(2);
+
+    // Lundi 12:30 UTC, mais ESPN est en panne : échec, ancien classement conservé.
+    now = new Date("2026-11-30T12:30:00Z");
+    espnDown = true;
+    let data = await refresh(cfg);
+    expect(calls.rankings).toBe(2); // les 503 ne passent pas par le compteur du faux serveur
+    expect(data.rankings.tables.ATP?.players.length).toBeGreaterThan(0);
+    expect(data.meta.lastError).toContain("ESPN");
+
+    // 20 min plus tard : on n'insiste pas.
+    now = new Date("2026-11-30T12:50:00Z");
+    espnDown = false;
+    await refresh(cfg);
+    expect(calls.rankings).toBe(2);
+
+    // 1 h après l'échec : nouvelle tentative réussie.
+    now = new Date("2026-11-30T13:31:00Z");
+    data = await refresh(cfg);
+    expect(calls.rankings).toBe(4);
+    expect(data.rankings.fetchedAt).toBe("2026-11-30T13:31:00.000Z");
   });
 
   it("garde les données connues et note l'erreur si une API échoue", async () => {

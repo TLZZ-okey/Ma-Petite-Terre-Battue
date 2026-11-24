@@ -1,4 +1,5 @@
 import { syncConfig } from "@/lib/server/config";
+import { nextRankingsRelease } from "@/lib/server/rankings";
 
 // Données toujours fraîches : jamais de mise en cache de la réponse.
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export async function GET() {
     matches: { total: matches.length, withResult: matches.filter((m) => m.result).length },
     rankings: {
       fetchedAt: data.rankings.fetchedAt,
+      nextRefresh: nextRankingsRelease(new Date()).toISOString(),
       atp: { updated: data.rankings.tables.ATP?.updated ?? null, players: data.rankings.tables.ATP?.players.length ?? 0 },
       wta: { updated: data.rankings.tables.WTA?.updated ?? null, players: data.rankings.tables.WTA?.players.length ?? 0 },
     },

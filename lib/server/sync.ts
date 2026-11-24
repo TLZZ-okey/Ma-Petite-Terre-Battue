@@ -2,7 +2,7 @@ import { setsToWin } from "../scoring";
 import type { MatchResult, MatchState, Tour } from "../types";
 import type { MatchStore, StoreData, StoredMatch } from "./matchStore";
 import { activeTennisKeys, eventToMatch, getTennisOdds, listSports, type Fetcher } from "./oddsApi";
-import { enrichPlayer, fetchRankings } from "./rankings";
+import { enrichPlayer, fetchRankings, rankingsDue } from "./rankings";
 import { fetchTennisMatch, fetchTennisMatches, findScoreMatch, matchSlug, type ScoreMatch } from "./sportscore";
 
 export interface SyncConfig {
@@ -13,8 +13,6 @@ export interface SyncConfig {
   oddsTtlMs: number;
   /** Délai minimal entre deux mises à jour des scores (SportScore). */
   scoresTtlMs: number;
-  /** Délai minimal entre deux mises à jour des classements (ESPN). Défaut : 24 h. */
-  rankingsTtlMs?: number;
   now?: () => Date;
 }
 
@@ -145,16 +143,21 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
     changed = true;
   }
 
-  if (isStale(data.rankings.fetchedAt, cfg.rankingsTtlMs ?? 24 * 3600_000, now)) {
+  // Classements : une fois par semaine, après leur publication du lundi.
+  if (rankingsDue(data.rankings, now)) {
+    let ok = true;
     // Chaque circuit séparément : une erreur sur l'un garde l'ancien classement de l'autre.
     for (const tour of ["ATP", "WTA"] as Tour[]) {
       try {
         data.rankings.tables[tour] = await fetchRankings(cfg.fetcher, tour);
       } catch (e) {
+        ok = false;
         errors.push(describeError(e));
       }
     }
-    data.rankings.fetchedAt = now.toISOString();
+    data.rankings.lastAttemptAt = now.toISOString();
+    // En cas d'échec, on ne marque pas la semaine comme faite : nouvelle tentative dans 1 h.
+    if (ok) data.rankings.fetchedAt = now.toISOString();
     changed = true;
   }
 

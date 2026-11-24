@@ -14,6 +14,7 @@ interface Status {
   matches: { total: number; withResult: number };
   rankings?: {
     fetchedAt: string | null;
+    nextRefresh: string;
     atp: { updated: string | null; players: number };
     wta: { updated: string | null; players: number };
   };
@@ -60,6 +61,18 @@ export function ApiStatusSection() {
                   data.rankings.atp.updated ?? data.rankings.wta.updated,
                 )})`
               : "pas encore chargés"}
+            {data.rankings && (
+              <span className="block font-normal text-muted">
+                Mis à jour chaque lundi · prochaine fois le{" "}
+                {new Date(data.rankings.nextRefresh).toLocaleString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            )}
           </dd>
           <dt className="text-muted">Tournois suivis</dt>
           <dd className="font-semibold">{data.activeTournaments.length || "aucun pour l'instant"}</dd>

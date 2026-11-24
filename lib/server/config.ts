@@ -15,7 +15,7 @@ const store = createFileStore(path.join(process.env.DATA_DIR ?? path.join(proces
  * - ODDS_API_KEY : clé The Odds API (obligatoire pour les cotes) ;
  * - ODDS_REFRESH_MINUTES : délai entre deux mises à jour des cotes (défaut 360 = 6 h) ;
  * - SCORES_REFRESH_MINUTES : délai entre deux mises à jour des scores (défaut 3) ;
- * - RANKINGS_REFRESH_MINUTES : délai entre deux mises à jour des classements ESPN (défaut 1440 = 24 h) ;
+ * Les classements ESPN sont mis à jour chaque lundi (voir lib/server/rankings.ts).
  * - DATA_DIR : dossier du fichier de données (défaut .data/).
  */
 export function syncConfig(): SyncConfig {
@@ -25,6 +25,5 @@ export function syncConfig(): SyncConfig {
     store,
     oddsTtlMs: minutes(process.env.ODDS_REFRESH_MINUTES, 360),
     scoresTtlMs: minutes(process.env.SCORES_REFRESH_MINUTES, 3),
-    rankingsTtlMs: minutes(process.env.RANKINGS_REFRESH_MINUTES, 1440),
   };
 }

@@ -1,6 +1,15 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { countryToIso2, enrichPlayer, findRanked, nameKey, parseRankings } from "../lib/server/rankings";
+import {
+  countryToIso2,
+  enrichPlayer,
+  findRanked,
+  lastRankingsRelease,
+  nameKey,
+  nextRankingsRelease,
+  parseRankings,
+  rankingsDue,
+} from "../lib/server/rankings";
 import type { Player } from "../lib/types";
 
 const load = (tour: string) =>
@@ -40,5 +49,35 @@ describe("classements ESPN (format réel, relevé le 24/11/2026)", () => {
     // Hors des 150 premiers ou circuit sans classement : inchangé.
     expect(enrichPlayer({ ...p, name: "Inconnu Total" }, { ATP: atp })).toEqual({ ...p, name: "Inconnu Total" });
     expect(enrichPlayer({ ...p, tour: "WTA" }, { ATP: atp })).toEqual({ ...p, tour: "WTA" });
+  });
+});
+
+describe("calendrier des classements (chaque lundi, 12:00 UTC)", () => {
+  const at = (iso: string) => new Date(iso);
+
+  it("calcule le dernier et le prochain lundi de publication", () => {
+    // Mardi 24/11/2026 → lundi 23/11 12:00 UTC.
+    expect(lastRankingsRelease(at("2026-11-24T19:00:00Z")).toISOString()).toBe("2026-11-23T12:00:00.000Z");
+    // Lundi matin, avant 12:00 : la publication de référence est celle du lundi précédent.
+    expect(lastRankingsRelease(at("2026-11-23T09:00:00Z")).toISOString()).toBe("2026-11-16T12:00:00.000Z");
+    // Lundi 12:00 pile : c'est la nouvelle.
+    expect(lastRankingsRelease(at("2026-11-23T12:00:00Z")).toISOString()).toBe("2026-11-23T12:00:00.000Z");
+    // Dimanche : lundi d'avant.
+    expect(lastRankingsRelease(at("2026-11-29T23:00:00Z")).toISOString()).toBe("2026-11-23T12:00:00.000Z");
+    expect(nextRankingsRelease(at("2026-11-24T19:00:00Z")).toISOString()).toBe("2026-11-30T12:00:00.000Z");
+  });
+
+  it("ne redemande les classements qu'une fois par semaine", () => {
+    const fetchedTuesday = { fetchedAt: "2026-11-24T19:00:00Z", lastAttemptAt: "2026-11-24T19:00:00Z" };
+    expect(rankingsDue({ fetchedAt: null }, at("2026-11-24T19:00:00Z"))).toBe(true); // jamais chargés
+    expect(rankingsDue(fetchedTuesday, at("2026-11-27T10:00:00Z"))).toBe(false); // vendredi
+    expect(rankingsDue(fetchedTuesday, at("2026-11-30T11:59:00Z"))).toBe(false); // lundi matin
+    expect(rankingsDue(fetchedTuesday, at("2026-11-30T12:00:00Z"))).toBe(true); // lundi midi
+  });
+
+  it("retente une heure après un échec, sans attendre le lundi suivant", () => {
+    const failed = { fetchedAt: "2026-11-17T12:05:00Z", lastAttemptAt: "2026-11-23T12:10:00Z" };
+    expect(rankingsDue(failed, at("2026-11-23T12:40:00Z"))).toBe(false);
+    expect(rankingsDue(failed, at("2026-11-23T13:10:00Z"))).toBe(true);
   });
 });
