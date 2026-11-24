@@ -49,7 +49,8 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 
 1. Crée un compte gratuit sur [the-odds-api.com](https://the-odds-api.com) pour recevoir ta clé par e-mail.
 2. Copie `.env.example` en `.env.local` et renseigne `ODDS_API_KEY`. Garde `NEXT_PUBLIC_MATCH_SOURCE=api`.
-3. Relance `npm run dev` (ou `npm run build && npm start`). La page **Profil → Données en direct** affiche l'état
+3. **Arrête puis relance** `npm run dev` (ou `npm run build && npm start`) : `NEXT_PUBLIC_MATCH_SOURCE` n'est lue
+   qu'au démarrage. La page **Profil → Données en direct** affiche l'état
    de la connexion et le quota restant.
 
 **Fonctionnement**
@@ -64,9 +65,13 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 - The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500) et ne fournit ni classement ni
   pays des joueurs : les avatars affichent alors leurs initiales.
 - La mention « Powered by SportScore » est obligatoire (conditions de l'offre gratuite) et s'affiche en bas des pages.
-- ⚠️ Le format de réponse de SportScore n'a pas pu être vérifié pendant le développement : sa lecture
-  (`lib/server/sportscore.ts`) est tolérante, et `/api/status` montre un échantillon brut de la dernière réponse
-  pour l'ajuster si besoin.
+- Le format de SportScore a été vérifié sur l'API réelle (extrait dans `tests/fixtures/`). Il ne donne que le nombre
+  de sets gagnés (pas le score de chaque set). Si un match sort de la liste des 50 derniers matchs, son détail est
+  consulté (5 au plus par mise à jour). `/api/status` montre un échantillon brut de la dernière réponse.
+- **Intersaison** : entre la fin de saison (fin novembre) et le début de l'Open d'Australie, The Odds API ne propose
+  aucun tournoi de tennis actif. La page Matchs l'indique dans un bandeau.
+- Si le serveur passe par un proxy d'entreprise, lance Node avec `NODE_USE_ENV_PROXY=1` (Node ≥ 22.21) pour que
+  ses requêtes utilisent `HTTPS_PROXY`.
 
 Sans clé (ou avec `NEXT_PUBLIC_MATCH_SOURCE=mock`), l'app garde les matchs de démo et ses outils de simulation.
 

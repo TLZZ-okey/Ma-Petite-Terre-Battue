@@ -1,5 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { findScoreMatch, normalizeMatch, normalizeStatus, samePlayer } from "../lib/server/sportscore";
+import { readFileSync } from "node:fs";
+import { findScoreMatch, matchSlug, normalizeMatch, normalizeStatus, samePlayer } from "../lib/server/sportscore";
+
+describe("SportScore (format réel, relevé le 24/11/2026)", () => {
+  const body = JSON.parse(readFileSync(new URL("./fixtures/sportscore-matches.json", import.meta.url), "utf8"));
+  const [ended, ended2, canceled, upcoming] = body.matches.map(normalizeMatch);
+
+  it("lit un match terminé : joueurs, sets, date et identifiant", () => {
+    expect(ended).toMatchObject({
+      home: "Diego Duran",
+      away: "Jesse Flores",
+      homeSets: 2,
+      awaySets: 0,
+      status: "finished",
+      startTime: "2026-11-24T00:10:00.000Z",
+      id: "/tennis/match/jesse-flores-vs-diego-duran/",
+      periods: [],
+    });
+    expect(ended2).toMatchObject({ homeSets: 1, awaySets: 2, status: "finished" });
+  });
+
+  it("ignore les matchs annulés même marqués « finished »", () => {
+    expect(canceled.status).toBe("unknown");
+  });
+
+  it("lit un match à venir sans score", () => {
+    expect(upcoming).toMatchObject({ status: "scheduled", homeSets: null, awaySets: null });
+  });
+
+  it("construit le slug utilisé par le détail d'un match", () => {
+    expect(matchSlug("Félix Auger-Aliassime", "Stefan Vujic")).toBe("felix-auger-aliassime-vs-stefan-vujic");
+  });
+});
 
 describe("SportScore (lecture tolérante)", () => {
   it("lit un format de type SofaScore (home_score.periodN)", () => {

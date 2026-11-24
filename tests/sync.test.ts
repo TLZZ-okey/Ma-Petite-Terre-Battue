@@ -7,8 +7,8 @@ import { EVENT } from "./oddsApi.test";
 const HOUR = 3600_000;
 
 /** Fausses API : compte les appels pour vérifier l'économie de quota. */
-function fakeApis(opts: { events: () => OddsApiEvent[]; scores: () => unknown[] }) {
-  const calls = { sports: 0, odds: 0, scores: 0 };
+function fakeApis(opts: { events: () => OddsApiEvent[]; scores: () => unknown[]; detail?: (slug: string) => unknown | null }) {
+  const calls = { sports: 0, odds: 0, scores: 0, details: 0 };
   const fetcher: Fetcher = async (url) => {
     const u = new URL(url);
     const json = (body: unknown, headers: Record<string, string> = {}) =>
@@ -24,6 +24,11 @@ function fakeApis(opts: { events: () => OddsApiEvent[]; scores: () => unknown[] 
       calls.odds++;
       expect(u.searchParams.get("markets")).toBe("h2h");
       return json(opts.events(), { "x-requests-remaining": "498", "x-requests-used": "2" });
+    }
+    if (u.hostname === "sportscore.com" && u.pathname === "/api/widget/match/") {
+      calls.details++;
+      const m = opts.detail?.(u.searchParams.get("slug")!) ?? null;
+      return m ? json({ sport: "tennis", match: m }) : new Response('{"error":"Match not found"}', { status: 404 });
     }
     if (u.hostname === "sportscore.com") {
       calls.scores++;
@@ -60,7 +65,7 @@ describe("synchronisation The Odds API + SportScore", () => {
 
     // 1. Import avant le match.
     let data = await refresh(cfg);
-    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0 });
+    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0, details: 0 });
     expect(data.meta.quota).toEqual({ remaining: 498, used: 2 });
     expect(toMatchState(data.matches.toa_e1, now)).toMatchObject({ status: "upcoming", odds1: 1.22 });
 
@@ -95,6 +100,31 @@ describe("synchronisation The Odds API + SportScore", () => {
     expect(calls.scores).toBe(2);
   });
 
+  it("consulte le détail d'un match absent de la liste récente (format réel SportScore)", async () => {
+    let now = new Date("2026-05-30T06:00:00Z");
+    const { fetcher, calls } = fakeApis({
+      events: () => [EVENT],
+      scores: () => [], // match sorti des 50 derniers
+      detail: (slug) =>
+        slug === "jannik-sinner-vs-arthur-fils"
+          ? { home: "Arthur Fils", away: "Jannik Sinner", home_score: "0", away_score: "3", status: "finished", status_text: "Ended", time: "2026-05-30T09:00:00+00:00" }
+          : null,
+    });
+    const cfg: SyncConfig = { apiKey: "k", fetcher, store: createMemoryStore(), oddsTtlMs: 6 * HOUR, scoresTtlMs: 60_000, now: () => now };
+    await refresh(cfg);
+
+    // 30 min après le début : trop tôt pour chercher le détail.
+    now = new Date("2026-05-30T09:30:00Z");
+    await refresh(cfg);
+    expect(calls.details).toBe(0);
+
+    // 3 h après : le détail donne le résultat (sans score par set).
+    now = new Date("2026-05-30T12:00:00Z");
+    const data = await refresh(cfg);
+    expect(calls.details).toBe(1);
+    expect(data.matches.toa_e1.result).toEqual({ winnerId: "atp-jannik-sinner", sets: 3, score: [] });
+  });
+
   it("garde les données connues et note l'erreur si une API échoue", async () => {
     const store = createMemoryStore();
     const now = new Date("2026-05-30T06:00:00Z");
@@ -108,6 +138,15 @@ describe("synchronisation The Odds API + SportScore", () => {
   it("n'appelle pas The Odds API sans clé", async () => {
     const { fetcher, calls } = fakeApis({ events: () => [], scores: () => [] });
     await refresh({ apiKey: undefined, fetcher, store: createMemoryStore(), oddsTtlMs: HOUR, scoresTtlMs: HOUR });
-    expect(calls).toEqual({ sports: 0, odds: 0, scores: 0 });
+    expect(calls).toEqual({ sports: 0, odds: 0, scores: 0, details: 0 });
+  });
+});
+
+describe("messages d'erreur", () => {
+  it("explique une erreur réseau au lieu de « fetch failed »", async () => {
+    const { describeError } = await import("../lib/server/sync");
+    const err = new TypeError("fetch failed", { cause: { code: "ENOTFOUND" } });
+    expect(describeError(err)).toBe("Impossible de joindre l'API (ENOTFOUND) : vérifie la connexion Internet du serveur.");
+    expect(describeError(new Error("The Odds API : erreur 401"))).toBe("The Odds API : erreur 401");
   });
 });

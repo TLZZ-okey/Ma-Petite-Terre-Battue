@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ApiNotice } from "@/components/ApiStatus";
 import { useApp } from "@/components/AppProvider";
 import { DayPicker } from "@/components/DayPicker";
 import { useAsync, useMyPredictions } from "@/components/hooks";
@@ -82,6 +83,8 @@ export default function MatchsPage() {
       </div>
 
       {showRules && <RulesCard className="mx-4 mt-4 md:mx-0 lg:hidden" />}
+
+      <ApiNotice />
 
       {error && (
         <p role="alert" className="mx-4 mt-4 rounded-xl bg-live/10 px-4 py-3 text-sm font-semibold text-live md:mx-0">

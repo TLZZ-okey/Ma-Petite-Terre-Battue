@@ -7,10 +7,16 @@ import type { Fetcher } from "./oddsApi";
  * (matchs en cours et récents, sans clé API, ~1 000 requêtes / 24 h / IP).
  * Conditions : la mention « Powered by SportScore » doit rester visible dans l'app.
  *
- * ⚠️ Le format exact de la réponse n'a pas pu être vérifié (domaine inaccessible
- * lors du développement). La lecture ci-dessous est volontairement tolérante :
- * elle accepte plusieurs noms de champs courants. Un échantillon brut de la
- * dernière réponse est conservé (voir /api/status) pour ajuster ce fichier.
+ * Format réel (vérifié le 24/11/2026) :
+ *   { sport, count, matches: [{ home, away, home_score: "2", away_score: "0",
+ *     status: "finished" | "upcoming" | …, status_text: "Ended" | "Canceled" | "Not started",
+ *     time: ISO, competition, url: "/tennis/match/a-vs-b/" }] }
+ * Détail : GET /api/widget/match/?sport=tennis&slug=a-vs-b → { match: {…même format} }
+ * (404 { error: "Match not found" } si inconnu ; l'ordre des joueurs dans le slug est indifférent).
+ * Pas de score par set : seulement le nombre de sets gagnés par chaque joueur.
+ *
+ * La lecture reste tolérante à d'autres noms de champs, et un échantillon brut de la
+ * dernière réponse est conservé (voir /api/status) pour repérer un changement de format.
  */
 
 /** Adresse de l'API (modifiable pour les tests via SPORTSCORE_BASE_URL). */
@@ -91,6 +97,9 @@ function asNumber(v: unknown): number | null {
   return null;
 }
 
+/** Matchs annulés ou reportés : jamais de résultat à en tirer. */
+const CANCELLED = /(cancel|postpon|abandon|interrupt|suspend|delay)/i;
+
 export function normalizeStatus(raw: unknown): ScoreStatus {
   const text = (isObj(raw) ? [raw.type, raw.short, raw.long, raw.description, raw.name, raw.code] : [raw])
     .filter((v) => v !== undefined && v !== null)
@@ -161,22 +170,51 @@ export function normalizeMatch(raw: unknown): ScoreMatch | null {
   if (winnerRaw === 1 || winnerRaw === "1" || winnerRaw === "home") winner = "home";
   else if (winnerRaw === 2 || winnerRaw === "2" || winnerRaw === "away") winner = "away";
 
-  const start = first(raw, ["start_time", "startTime", "start_at", "startAt", "kickoff", "date", "start_timestamp", "startTimestamp"]);
+  const start = first(raw, ["time", "start_time", "startTime", "start_at", "startAt", "kickoff", "date", "start_timestamp", "startTimestamp"]);
   let startTime: string | null = null;
   if (typeof start === "number") startTime = new Date(start < 1e12 ? start * 1000 : start).toISOString();
   else if (typeof start === "string" && !Number.isNaN(Date.parse(start))) startTime = new Date(start).toISOString();
 
   return {
-    id: String(first(raw, ["id", "slug", "match_id"]) ?? `${home}-${away}`),
+    id: String(first(raw, ["id", "slug", "url", "match_id"]) ?? `${home}-${away}`),
     home,
     away,
     startTime,
-    status: normalizeStatus(first(raw, ["status", "state", "status_text", "statusText"])),
+    status: CANCELLED.test(String(first(raw, ["status_text", "statusText"]) ?? ""))
+      ? "unknown"
+      : normalizeStatus(first(raw, ["status", "state", "status_text", "statusText"])),
     homeSets,
     awaySets,
     periods,
     winner,
   };
+}
+
+/** Slug SportScore d'un match : « prenom-nom-vs-prenom-nom ». */
+export function matchSlug(player1: string, player2: string): string {
+  const s = (n: string) =>
+    n
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  return `${s(player1)}-vs-${s(player2)}`;
+}
+
+/** Détail d'un match par slug (null si SportScore ne le connaît pas). */
+export async function fetchTennisMatch(fetcher: Fetcher, slug: string): Promise<ScoreMatch | null> {
+  const url = new URL("/api/widget/match/", SPORTSCORE_BASE);
+  url.searchParams.set("sport", "tennis");
+  url.searchParams.set("slug", slug);
+  const res = await fetcher(url.toString(), {
+    headers: { Accept: "application/json", "User-Agent": USER_AGENT },
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`SportScore : erreur ${res.status}`);
+  const body = (await res.json()) as unknown;
+  return normalizeMatch(isObj(body) && isObj(body.match) ? body.match : body);
 }
 
 /* ------------------------------------------------------------------ */

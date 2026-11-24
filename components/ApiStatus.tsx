@@ -75,3 +75,31 @@ export function SportScoreCredit({ className = "" }: { className?: string }) {
     </p>
   );
 }
+
+/**
+ * Bandeau de la page Matchs (source « api ») : explique pourquoi aucun match n'apparaît
+ * (clé manquante, intersaison…) au lieu d'une simple liste vide.
+ */
+export function ApiNotice() {
+  const { source } = useApp();
+  const { data } = useAsync<Status | null>(async () => {
+    if (source !== "api") return null;
+    const res = await fetch("/api/status", { cache: "no-store" });
+    return res.ok ? res.json() : null;
+  }, [source]);
+
+  if (!data) return null;
+  let message: string | null = null;
+  if (!data.oddsApiConfigured) {
+    message = "Clé The Odds API manquante : ajoute ODDS_API_KEY dans .env.local puis redémarre le serveur.";
+  } else if (data.lastOddsSync && data.activeTournaments.length === 0) {
+    message =
+      "Aucun tournoi de tennis n'est couvert par The Odds API en ce moment (intersaison). Les matchs réapparaîtront dès la reprise des grands tournois.";
+  }
+  if (!message) return null;
+  return (
+    <p role="status" className="mx-4 mt-4 rounded-xl border border-clay/30 bg-clay-50 px-4 py-3 text-sm text-ink md:mx-0">
+      {message}
+    </p>
+  );
+}

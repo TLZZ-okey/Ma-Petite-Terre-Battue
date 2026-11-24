@@ -2,7 +2,7 @@ import { setsToWin } from "../scoring";
 import type { MatchResult, MatchState } from "../types";
 import type { MatchStore, StoreData, StoredMatch } from "./matchStore";
 import { activeTennisKeys, eventToMatch, getTennisOdds, listSports, type Fetcher } from "./oddsApi";
-import { fetchTennisMatches, findScoreMatch, type ScoreMatch } from "./sportscore";
+import { fetchTennisMatch, fetchTennisMatches, findScoreMatch, matchSlug, type ScoreMatch } from "./sportscore";
 
 export interface SyncConfig {
   apiKey: string | undefined;
@@ -14,6 +14,12 @@ export interface SyncConfig {
   scoresTtlMs: number;
   now?: () => Date;
 }
+
+/** Nombre maximal de consultations « détail » par mise à jour (quota SportScore). */
+const MAX_DETAIL_LOOKUPS = 5;
+
+/** Durée minimale d'un match avant de chercher son résultat dans le détail. */
+const MIN_MATCH_DURATION_MS = 75 * 60_000;
 
 /** Au-delà de ce délai sans résultat, on arrête de chercher le score d'un match. */
 const SCORE_LOOKBACK_MS = 4 * 24 * 3600_000;
@@ -76,15 +82,33 @@ async function syncScores(cfg: SyncConfig, data: StoreData, now: Date) {
   const { matches: candidates, sample } = await fetchTennisMatches(cfg.fetcher);
   data.meta.scoresSample = sample;
   const t = now.getTime();
+  let lookups = 0;
   for (const stored of Object.values(data.matches)) {
     const start = Date.parse(stored.match.startTime);
     if (stored.result || start > t || start <= t - SCORE_LOOKBACK_MS) continue;
-    const found = findScoreMatch(stored.match.player1.name, stored.match.player2.name, stored.match.startTime, candidates);
+    let found = findScoreMatch(stored.match.player1.name, stored.match.player2.name, stored.match.startTime, candidates);
+    // Absent des 50 derniers matchs (jours chargés) : on consulte son détail, avec parcimonie.
+    if (!found && lookups < MAX_DETAIL_LOOKUPS && t - start >= MIN_MATCH_DURATION_MS) {
+      lookups++;
+      const detail = await fetchTennisMatch(cfg.fetcher, matchSlug(stored.match.player1.name, stored.match.player2.name));
+      if (detail) found = findScoreMatch(stored.match.player1.name, stored.match.player2.name, stored.match.startTime, [detail]);
+    }
     if (!found) continue;
     const result = resultFromScore(stored, found.match, found.swapped);
     if (result) stored.result = result;
   }
   data.meta.lastScoresSync = now.toISOString();
+}
+
+/** Message d'erreur lisible, y compris pour les erreurs réseau (« fetch failed »). */
+export function describeError(e: unknown): string {
+  if (!(e instanceof Error)) return String(e);
+  const cause = (e as Error & { cause?: { code?: string; message?: string } }).cause;
+  if (e.message === "fetch failed") {
+    const detail = cause?.code ?? cause?.message ?? "raison inconnue";
+    return `Impossible de joindre l'API (${detail}) : vérifie la connexion Internet du serveur.`;
+  }
+  return e.message;
 }
 
 let inFlight: Promise<StoreData> | null = null;
@@ -111,7 +135,7 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
     try {
       await syncOdds(cfg, data, now);
     } catch (e) {
-      errors.push(e instanceof Error ? e.message : String(e));
+      errors.push(describeError(e));
       // On attend le délai normal avant de réessayer, pour ne pas gaspiller le quota.
       data.meta.lastOddsSync = now.toISOString();
     }
@@ -122,7 +146,7 @@ async function doRefresh(cfg: SyncConfig): Promise<StoreData> {
     try {
       await syncScores(cfg, data, now);
     } catch (e) {
-      errors.push(e instanceof Error ? e.message : String(e));
+      errors.push(describeError(e));
       data.meta.lastScoresSync = now.toISOString();
     }
     changed = true;
