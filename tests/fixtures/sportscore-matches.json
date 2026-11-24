@@ -1,0 +1,62 @@
+{
+ "sport": "tennis",
+ "count": 4,
+ "matches": [
+  {
+   "home": "Diego Duran",
+   "away": "Jesse Flores",
+   "home_logo": "",
+   "away_logo": "https://img.thesports.com/v2/team/bac6586d3de1497af156eb71f440a884.png",
+   "home_score": "2",
+   "away_score": "0",
+   "status": "finished",
+   "status_text": "Ended",
+   "time": "2026-11-24T00:10:00+00:00",
+   "competition": "ATP Challenger San Salvador, El Salvador Men Singles",
+   "competition_logo": "https://img.thesports.com/v2/unique-tournament/5639935c43491b3af7498cc79fb091a3.png",
+   "url": "/tennis/match/jesse-flores-vs-diego-duran/"
+  },
+  {
+   "home": "Stefan Vujic",
+   "away": "Tristan Schoolkate",
+   "home_logo": "https://img.thesports.com/v2/team/73c418086146ae6120a62632be6b6b1c.png",
+   "away_logo": "https://img.thesports.com/v2/team/358a636cf3f65ea5f864c1a26f5fbfeb.png",
+   "home_score": "1",
+   "away_score": "2",
+   "status": "finished",
+   "status_text": "Ended",
+   "time": "2026-11-24T00:50:00+00:00",
+   "competition": "ATP Challenger Playford City, Australia Men Singles",
+   "competition_logo": "https://img.thesports.com/v2/unique-tournament/1565e6af7caf99a5598cdfcefe0f32b3.png",
+   "url": "/tennis/match/tristan-schoolkate-vs-stefan-vujic/"
+  },
+  {
+   "home": "Constantin Bittoun Kouzmine",
+   "away": "Liam Broady",
+   "home_logo": "https://img.thesports.com/v2/team/ae23c6ea650b985b73182aaae920f573.png",
+   "away_logo": "https://img.thesports.com/v2/team/bb4e04bb77957c1b898e24af97a29ae8.png",
+   "home_score": "0",
+   "away_score": "0",
+   "status": "finished",
+   "status_text": "Canceled",
+   "time": "2026-11-24T01:00:00+00:00",
+   "competition": "ATP Challenger Yokohama, Japan Men Singles",
+   "competition_logo": "https://img.thesports.com/v2/unique-tournament/4928ae67b5bd56cab0aed711cecd4003.png",
+   "url": "/tennis/match/constantin-bittoun-kouzmine-vs-liam-broady/"
+  },
+  {
+   "home": "Demetris Azoides",
+   "away": "Dimitar Kuzmanov",
+   "home_logo": "https://img.thesports.com/v2/team/ee890e64441c15b83786eda5da27bfdc.png",
+   "away_logo": "https://img.thesports.com/v2/team/b9264ac37a45b4ad84e2498eff8c8357.png",
+   "home_score": null,
+   "away_score": null,
+   "status": "upcoming",
+   "status_text": "Not started",
+   "time": "2026-11-24T09:40:00+00:00",
+   "competition": "ATP Challenger Hersonissos 4, Greece Men Singles",
+   "competition_logo": "https://img.thesports.com/v2/unique-tournament/05569ad0185a3385c62f1356c7f11136.png",
+   "url": "/tennis/match/demetris-azoides-vs-dimitar-kuzmanov/"
+  }
+ ]
+}
