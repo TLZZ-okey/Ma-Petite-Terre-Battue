@@ -6,19 +6,27 @@ import { useLeaderboard } from "@/components/hooks";
 import { Card, EmptyState, PageHeader, Skeleton, cx } from "@/components/ui";
 import { formatPoints } from "@/lib/format";
 import type { LeaderboardEntry } from "@/lib/game";
+import { levelFor } from "@/lib/gamification";
 
-const MEDAL = ["bg-gold-400", "bg-[#a9b4b9]", "bg-[#c0834f]"];
+const MEDALS = ["🥇", "🥈", "🥉"];
+
+/** Marches du podium : 2e, 1er, 3e. */
+const STEPS = [
+  { rank: 2, height: "h-24", tone: "border-line-strong bg-surface text-ink shadow-chunky" },
+  { rank: 1, height: "h-36", tone: "clay-surface border-clay-700 text-white shadow-chunky-clay" },
+  { rank: 3, height: "h-16", tone: "border-line-strong bg-surface text-ink shadow-chunky" },
+];
 
 export default function ClassementPage() {
   const { user } = useApp();
   const { data, loading } = useLeaderboard();
   const entries = data ?? [];
-  const podium = entries.slice(0, 3);
+  const byRank = (rank: number) => entries.find((e, i) => i === rank - 1);
 
   return (
     <div className="px-4 sm:px-0">
       <div className="-mx-4 sm:mx-0">
-        <PageHeader title="Classement" subtitle="Tous les joueurs de cet appareil" />
+        <PageHeader title="Classement" emoji="🏆" subtitle="Qui sera le roi de la terre battue ?" />
       </div>
 
       {loading && !data ? (
@@ -27,33 +35,44 @@ export default function ClassementPage() {
         <EmptyState icon="🏆" title="Personne au classement pour l'instant" />
       ) : (
         <div className="mx-auto max-w-4xl">
-          {/* Podium : 2e, 1er, 3e */}
-          <div className="grid grid-cols-3 items-end gap-3 sm:gap-4">
-            {[podium[1], podium[0], podium[2]].map((entry, i) =>
-              entry ? (
-                <PodiumCard key={entry.user.id} entry={entry} me={entry.user.id === user?.id} first={i === 1} />
-              ) : (
-                <div key={i} />
-              ),
-            )}
+          {/* Podium */}
+          <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+            {STEPS.map((step) => {
+              const entry = byRank(step.rank);
+              return (
+                <div key={step.rank} className="flex flex-col items-center">
+                  {entry ? <PodiumPlayer entry={entry} me={entry.user.id === user?.id} /> : <div className="h-24" />}
+                  <div
+                    className={cx(
+                      "mt-2 flex w-full items-start justify-center rounded-t-3xl border-2 border-b-0 pt-2 font-display text-4xl font-bold",
+                      step.height,
+                      step.tone,
+                    )}
+                    aria-hidden
+                  >
+                    {step.rank}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <Card className="mt-6 overflow-hidden">
+          <Card className="overflow-hidden">
             <table className="w-full text-sm">
               <caption className="sr-only">Classement complet</caption>
               <thead>
-                <tr className="border-b border-line bg-subtle/60 text-left text-[11px] font-semibold tracking-wider text-ink-3 uppercase">
-                  <th scope="col" className="w-20 py-3 pl-5">
+                <tr className="border-b-2 border-line bg-subtle text-left text-xs font-extrabold text-ink-3 uppercase">
+                  <th scope="col" className="w-16 py-3 pl-5">
                     Rang
                   </th>
                   <th scope="col" className="py-3">
                     Joueur
                   </th>
                   <th scope="col" className="hidden py-3 text-right sm:table-cell">
-                    Bons vainqueurs
+                    ✅ Vainqueurs
                   </th>
                   <th scope="col" className="hidden py-3 text-right sm:table-cell">
-                    Scores exacts
+                    🎯 Exacts
                   </th>
                   <th scope="col" className="py-3 pr-5 text-right">
                     Points
@@ -63,38 +82,34 @@ export default function ClassementPage() {
               <tbody>
                 {entries.map((e) => {
                   const me = e.user.id === user?.id;
+                  const lvl = levelFor(e.points);
                   return (
-                    <tr key={e.user.id} className={cx("border-b border-line last:border-0", me ? "bg-court-50" : "hover:bg-subtle/50")}>
+                    <tr key={e.user.id} className={cx("border-b-2 border-line last:border-0", me ? "bg-clay-50" : "hover:bg-subtle/60")}>
                       <td className="py-3 pl-5">
-                        <span
-                          className={cx(
-                            "tabular inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold",
-                            e.rank <= 3 ? `${MEDAL[e.rank - 1]} text-white` : "bg-subtle text-ink-2",
-                          )}
-                        >
-                          {e.rank}
+                        <span className="flex h-9 w-9 items-center justify-center text-2xl" aria-label={`Rang ${e.rank}`}>
+                          {MEDALS[e.rank - 1] ?? <span className="tabular font-display text-lg font-semibold text-ink-3">{e.rank}</span>}
                         </span>
                       </td>
                       <td className="py-3">
                         <span className="flex items-center gap-3">
-                          <Avatar name={e.user.username} color={e.user.avatarColor} size={32} ring={false} />
+                          <Avatar name={e.user.username} color={e.user.avatarColor} size={38} ring={false} />
                           <span className="min-w-0">
-                            <span className="block truncate font-semibold text-ink">
+                            <span className="block truncate font-display text-lg leading-tight font-semibold text-ink">
                               {e.user.username}
-                              {me && <span className="ml-1.5 text-xs font-medium text-court-700">· toi</span>}
+                              {me && <span className="ml-1.5 font-sans text-xs font-extrabold text-clay-600">· toi</span>}
                             </span>
-                            <span className="tabular block text-xs text-ink-3 sm:hidden">
-                              {e.won}/{e.settled} justes · {e.perfect} exacts
+                            <span className="block truncate text-xs font-bold text-ink-3">
+                              {lvl.current.emoji} Niv. {lvl.current.level} · {lvl.current.title}
                             </span>
                           </span>
                         </span>
                       </td>
-                      <td className="tabular hidden py-3 text-right text-ink-2 sm:table-cell">
+                      <td className="tabular hidden py-3 text-right font-bold text-ink-2 sm:table-cell">
                         {e.won}
                         <span className="text-ink-3">/{e.settled}</span>
                       </td>
-                      <td className="tabular hidden py-3 text-right text-gold sm:table-cell">{e.perfect}</td>
-                      <td className="tabular py-3 pr-5 text-right font-display text-xl font-bold text-court-900">
+                      <td className="tabular hidden py-3 text-right font-bold text-gold sm:table-cell">{e.perfect}</td>
+                      <td className="tabular py-3 pr-5 text-right font-display text-2xl font-semibold text-clay-600">
                         {formatPoints(e.points)}
                       </td>
                     </tr>
@@ -105,10 +120,15 @@ export default function ClassementPage() {
           </Card>
 
           {entries.length < 2 && (
-            <p className="mt-4 text-center text-sm text-ink-3">
-              Invite tes amis à créer un compte sur cet appareil pour vous affronter. Les comptes en ligne arriveront avec
-              la base de données.
-            </p>
+            <Card className="mt-4 flex items-center gap-4 p-5" tone="ball">
+              <span className="text-4xl" aria-hidden>
+                🤝
+              </span>
+              <p className="font-bold">
+                Tout seul sur le court ? Invite tes amis à créer un compte sur cet appareil pour vous affronter ! Les
+                comptes en ligne arriveront avec la base de données.
+              </p>
+            </Card>
           )}
         </div>
       )}
@@ -116,32 +136,28 @@ export default function ClassementPage() {
   );
 }
 
-function PodiumCard({ entry, me, first }: { entry: LeaderboardEntry; me: boolean; first: boolean }) {
+function PodiumPlayer({ entry, me }: { entry: LeaderboardEntry; me: boolean }) {
+  const first = entry.rank === 1;
   return (
-    <div
-      className={cx(
-        "relative flex flex-col items-center rounded-2xl border px-2 text-center shadow-card",
-        first ? "border-court-800 bg-court-900 pt-6 pb-5 text-white sm:pt-8 sm:pb-6" : "border-line bg-surface pt-5 pb-4",
+    <div className="flex w-full flex-col items-center text-center">
+      {first && (
+        <span className="animate-float text-3xl" aria-hidden>
+          👑
+        </span>
       )}
-    >
-      <span
-        className={cx(
-          "tabular absolute -top-3 flex h-7 w-7 items-center justify-center rounded-full font-display text-base font-bold text-white ring-4",
-          MEDAL[entry.rank - 1] ?? "bg-ink-3",
-          first ? "ring-canvas" : "ring-canvas",
-        )}
-      >
-        {entry.rank}
+      <span className="relative">
+        <Avatar name={entry.user.username} color={entry.user.avatarColor} size={first ? 72 : 56} />
+        <span className="absolute -right-2 -bottom-1 text-2xl" aria-hidden>
+          {MEDALS[entry.rank - 1]}
+        </span>
       </span>
-      <Avatar name={entry.user.username} color={entry.user.avatarColor} size={first ? 64 : 48} ring={first} />
-      <p className={cx("mt-2 w-full truncate text-sm font-semibold", first ? "text-white" : "text-ink")}>
+      <p className="mt-2 w-full truncate font-display text-lg leading-tight font-semibold text-ink">
         {entry.user.username}
-        {me && <span className={cx("ml-1 text-xs font-medium", first ? "text-white/70" : "text-court-700")}>· toi</span>}
+        {me && <span className="ml-1 font-sans text-xs font-extrabold text-clay-600">· toi</span>}
       </p>
-      <p className={cx("tabular font-display text-2xl leading-tight font-bold sm:text-3xl", first ? "text-ball" : "text-court-900")}>
-        {formatPoints(entry.points)}
+      <p className="tabular font-display text-2xl font-bold text-clay-600">
+        {formatPoints(entry.points)} <span className="text-sm text-ink-3">pts</span>
       </p>
-      <p className={cx("text-[11px]", first ? "text-white/65" : "text-ink-3")}>points</p>
     </div>
   );
 }

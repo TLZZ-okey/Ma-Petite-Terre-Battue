@@ -1,7 +1,10 @@
 import { formatPoints } from "@/lib/format";
-import { cx } from "./ui";
+import { levelFor } from "@/lib/gamification";
+import { ProgressBar, cx } from "./ui";
 
-/** Carte récapitulative sur fond vert court : total de points et progression. */
+/**
+ * « Ma partie » : niveau, barre d'XP et défi du jour (pronostiquer tous les matchs du jour).
+ */
 export function SummaryCard({
   points,
   done,
@@ -15,31 +18,44 @@ export function SummaryCard({
   label: string;
   className?: string;
 }) {
-  const pct = total ? Math.round((done / total) * 100) : 0;
+  const lvl = levelFor(points);
+  const challengeDone = total > 0 && done >= total;
   return (
-    <div className={cx("relative overflow-hidden rounded-2xl bg-court-900 p-5 text-white shadow-raised", className)}>
-      <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-ball/15" aria-hidden />
-      <span className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-ball/25" aria-hidden />
-      <p className="text-xs font-medium text-white/70">Mon total</p>
-      <p className="tabular mt-1 font-display text-5xl leading-none font-bold">
+    <div
+      className={cx(
+        "clay-surface relative overflow-hidden rounded-3xl border-2 border-clay-700 p-5 text-white shadow-chunky-clay",
+        className,
+      )}
+    >
+      <span className="tennis-ball absolute -top-6 -right-6 h-24 w-24 animate-float opacity-90" aria-hidden />
+
+      <p className="text-xs font-extrabold tracking-wide text-white/85 uppercase">Ma partie</p>
+      <p className="tabular mt-1 font-display text-5xl leading-none font-bold drop-shadow-[0_3px_0_rgb(0_0_0_/_0.2)]">
         {formatPoints(points)}
-        <span className="ml-1.5 text-xl text-white/70">pts</span>
+        <span className="ml-1.5 text-xl text-white/85">pts</span>
       </p>
-      <div className="mt-5 flex items-baseline justify-between text-xs">
-        <span className="text-white/80">{label}</span>
-        <span className="tabular font-semibold">
-          {done}/{total}
-        </span>
+
+      <div className="mt-4 rounded-2xl bg-white/15 p-3">
+        <div className="flex items-center justify-between gap-2 text-sm font-extrabold">
+          <span className="truncate">
+            {lvl.current.emoji} Niv. {lvl.current.level} · {lvl.current.title}
+          </span>
+        </div>
+        <ProgressBar value={lvl.progress} label="Progression vers le niveau suivant" className="mt-2 border-white/30 bg-white/20" />
+        <p className="mt-1.5 text-xs font-bold text-white/90">
+          {lvl.next ? `Encore ${formatPoints(lvl.toNext)} pts pour devenir « ${lvl.next.title} »` : "Niveau maximal atteint !"}
+        </p>
       </div>
-      <div
-        className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={label}
-      >
-        <div className="h-full rounded-full bg-ball transition-all" style={{ width: `${pct}%` }} />
+
+      <div className="mt-3 rounded-2xl bg-white p-3 text-ink">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-extrabold">{challengeDone ? "🏅 Défi du jour réussi !" : "🎯 Défi du jour"}</p>
+          <span className="tabular font-display text-base font-semibold text-clay-600">
+            {done}/{total}
+          </span>
+        </div>
+        <p className="text-xs font-bold text-ink-3">{label}</p>
+        <ProgressBar value={total ? done / total : 0} label={label} tone="clay" className="mt-2 border-line bg-subtle" />
       </div>
     </div>
   );

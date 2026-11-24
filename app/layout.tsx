@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { AppProvider } from "@/components/AppProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
-import "@fontsource-variable/inter";
-import "@fontsource/barlow-condensed/600.css";
-import "@fontsource/barlow-condensed/700.css";
+import "@fontsource-variable/fredoka";
+import "@fontsource-variable/nunito";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07362a",
+  themeColor: "#c9450a",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

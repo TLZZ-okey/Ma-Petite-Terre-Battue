@@ -45,58 +45,71 @@ export default function ConnexionPage() {
   }
 
   const inputClass =
-    "h-12 w-full rounded-xl border border-line-strong bg-surface px-4 text-base text-ink outline-none transition placeholder:text-ink-3/70 focus:border-court-600 focus:ring-4 focus:ring-court-100";
+    "h-14 w-full rounded-2xl border-2 border-line-strong bg-surface px-4 text-base font-bold text-ink shadow-chunky outline-none transition placeholder:font-semibold placeholder:text-ink-3/60 focus:border-clay-500 focus:ring-4 focus:ring-clay-100";
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
-      {/* Panneau de présentation */}
-      <section className="relative flex flex-col overflow-hidden bg-court-900 text-white lg:w-[46%] lg:justify-between lg:p-12">
-        <span className="absolute -right-24 -bottom-24 hidden h-96 w-96 rounded-full bg-clay-500/90 lg:block" aria-hidden />
-        <span className="absolute right-24 bottom-40 hidden h-20 w-20 rounded-full bg-ball lg:block" aria-hidden />
+      {/* Panneau de présentation : court de terre battue */}
+      <section className="clay-surface relative flex flex-col overflow-hidden text-white lg:min-h-dvh lg:w-1/2 lg:justify-center lg:gap-10 lg:px-12 lg:py-10">
+        <span className="tennis-ball absolute -top-12 -right-12 h-28 w-28 animate-float opacity-90 lg:-top-10 lg:-right-10 lg:h-40 lg:w-40" aria-hidden />
+        <span
+          className="tennis-ball absolute bottom-24 -left-8 hidden h-24 w-24 animate-float opacity-80 [animation-delay:1.2s] lg:block"
+          aria-hidden
+        />
 
-        <div className="relative flex items-center gap-3 px-6 pt-[calc(2rem+env(safe-area-inset-top))] pb-10 lg:p-0">
-          <Logo size={44} />
-          <span className="font-display text-2xl leading-none font-bold tracking-wide uppercase">
+        <div className="relative flex items-center gap-3 px-6 pt-[calc(2rem+env(safe-area-inset-top))] pb-12 lg:px-0 lg:pt-0 lg:pb-0">
+          <Logo size={52} />
+          <span className="font-display text-2xl leading-none font-bold drop-shadow-[0_2px_0_rgb(0_0_0_/_0.2)] lg:text-3xl">
             Ma Petite Terre Battue
           </span>
         </div>
 
-        <div className="relative hidden max-w-md lg:block">
-          <h1 className="font-display text-6xl leading-[0.95] font-bold tracking-wide uppercase">
+        <div className="relative hidden max-w-xl lg:block">
+          <h1 className="font-display text-6xl leading-[0.95] font-bold drop-shadow-[0_4px_0_rgb(0_0_0_/_0.2)] xl:text-7xl">
             Joue le match
             <br />
-            <span className="text-clay-200">avant le match.</span>
+            <span className="text-ball">avant le match !</span>
           </h1>
-          <ul className="mt-8 space-y-4 text-white/85">
+          <ul className="mt-8 grid gap-2.5">
             {[
-              ["Pronostique le score en sets", "2-0, 2-1… ton prono s'enregistre tout seul."],
-              ["Gagne des points", "Chaque joueur rapporte des points selon sa cote."],
-              ["Vise le score exact", "Bon vainqueur et bons sets : points × 1,5."],
-            ].map(([title, text]) => (
-              <li key={title} className="flex gap-3">
-                <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-ball" aria-hidden />
+              ["✍️", "Devine le score", "3-0, 3-1, 3-2… ton prono s'enregistre tout seul."],
+              ["🎾", "Gagne des points", "Plus ton joueur est outsider, plus il rapporte."],
+              ["🏆", "Monte au classement", "Niveaux, badges et séries à débloquer entre amis."],
+            ].map(([emoji, title, text]) => (
+              <li
+                key={title}
+                className="flex items-center gap-4 rounded-3xl border-2 border-white/40 bg-white/15 px-4 py-2.5 backdrop-blur-sm"
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl" aria-hidden>
+                  {emoji}
+                </span>
                 <span>
-                  <span className="block font-semibold text-white">{title}</span>
-                  <span className="text-sm">{text}</span>
+                  <span className="block font-display text-xl font-semibold">{title}</span>
+                  <span className="text-sm font-bold text-white/90">{text}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative hidden text-xs text-white/50 lg:block">Version locale · aucune adresse e-mail requise</p>
+        <p className="relative hidden text-sm font-bold text-white/80 lg:block lg:pt-2">
+          Version locale · aucune adresse e-mail requise
+        </p>
       </section>
 
       {/* Formulaire */}
-      <section className="-mt-5 flex flex-1 items-start justify-center rounded-t-3xl bg-canvas px-5 pt-8 pb-12 lg:mt-0 lg:items-center lg:rounded-none lg:px-12">
+      <section className="-mt-6 flex flex-1 items-start justify-center rounded-t-[2rem] bg-canvas px-5 pt-8 pb-12 lg:mt-0 lg:items-center lg:rounded-none lg:px-12">
         <div className="w-full max-w-sm">
-          <h2 className="font-display text-3xl font-bold tracking-wide text-court-900 uppercase">
-            {mode === "login" ? "Bon retour !" : "Crée ton compte"}
+          <p className="text-4xl" aria-hidden>
+            {mode === "login" ? "👋" : "🎉"}
+          </p>
+          <h2 className="mt-2 font-display text-4xl font-bold text-clay-600">
+            {mode === "login" ? "Bon retour !" : "Rejoins la partie !"}
           </h2>
-          <p className="mt-1 text-sm text-ink-3">
+          <p className="mt-1 font-semibold text-ink-3">
             {mode === "login"
               ? "Connecte-toi pour faire tes pronos."
-              : "Un pseudo et un mot de passe suffisent, sans adresse\u00a0e‑mail."}
+              : "Un pseudo et un mot de passe suffisent, sans adresse e‑mail."}
           </p>
 
           <Segmented
@@ -115,7 +128,7 @@ export default function ConnexionPage() {
 
           <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
             <div>
-              <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-ink-2">
+              <label htmlFor="username" className="mb-1.5 block text-sm font-extrabold text-ink-2">
                 Pseudo
               </label>
               <input
@@ -128,10 +141,10 @@ export default function ConnexionPage() {
                 className={inputClass}
                 placeholder="ex. Suzanne"
               />
-              {mode === "register" && <p className="mt-1 text-xs text-ink-3">3 à 20 caractères.</p>}
+              {mode === "register" && <p className="mt-1.5 text-xs font-bold text-ink-3">3 à 20 caractères.</p>}
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-ink-2">
+              <label htmlFor="password" className="mb-1.5 block text-sm font-extrabold text-ink-2">
                 Mot de passe
               </label>
               <div className="relative">
@@ -148,29 +161,29 @@ export default function ConnexionPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ink-3 hover:bg-subtle hover:text-ink"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded-xl px-3 py-2 text-xs font-extrabold text-clay-600 hover:bg-subtle"
                   aria-pressed={showPassword}
                 >
                   {showPassword ? "Masquer" : "Afficher"}
                 </button>
               </div>
-              {mode === "register" && <p className="mt-1 text-xs text-ink-3">4 caractères minimum.</p>}
+              {mode === "register" && <p className="mt-1.5 text-xs font-bold text-ink-3">4 caractères minimum.</p>}
             </div>
 
             {error && (
-              <p role="alert" className="rounded-xl bg-danger-50 px-3 py-2.5 text-sm font-medium text-danger">
-                {error}
+              <p role="alert" className="rounded-2xl border-2 border-danger/30 bg-danger-50 px-4 py-3 text-sm font-bold text-danger">
+                ⚠️ {error}
               </p>
             )}
 
             <Button type="submit" size="lg" disabled={busy || !username || !password} className="w-full">
-              {busy ? "Un instant…" : mode === "login" ? "Se connecter" : "Créer mon compte"}
+              {busy ? "Un instant…" : mode === "login" ? "C'est parti ! 🎾" : "Créer mon compte 🎾"}
             </Button>
           </form>
 
           {mode === "login" && accounts && accounts.length > 0 && (
-            <div className="mt-8 border-t border-line pt-6">
-              <p className="text-xs font-semibold text-ink-3">Comptes sur cet appareil</p>
+            <div className="mt-8 border-t-2 border-dashed border-line pt-6">
+              <p className="text-sm font-extrabold text-ink-2">Joueurs sur cet appareil</p>
               <ul className="mt-3 flex flex-wrap gap-2">
                 {accounts.map((a) => (
                   <li key={a.id}>
@@ -181,11 +194,11 @@ export default function ConnexionPage() {
                         document.getElementById("password")?.focus();
                       }}
                       className={cx(
-                        "flex items-center gap-2 rounded-full border bg-surface py-1 pr-3.5 pl-1 text-sm font-medium transition",
-                        username === a.username ? "border-court-600 text-court-800" : "border-line text-ink hover:border-line-strong",
+                        "press flex items-center gap-2 rounded-full border-2 bg-surface py-1 pr-4 pl-1 text-sm font-extrabold shadow-chunky",
+                        username === a.username ? "border-clay-500 text-clay-700" : "border-line text-ink hover:border-line-strong",
                       )}
                     >
-                      <Avatar name={a.username} color={a.avatarColor} size={28} ring={false} />
+                      <Avatar name={a.username} color={a.avatarColor} size={30} ring={false} />
                       {a.username}
                     </button>
                   </li>

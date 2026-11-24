@@ -4,6 +4,7 @@ import { useState } from "react";
 import { validatePrediction } from "@/lib/game";
 import type { MatchState } from "@/lib/types";
 import { useApp } from "./AppProvider";
+import { celebrate } from "./Celebration";
 import { useToast } from "./Toast";
 
 /** Enregistre / modifie / supprime un pronostic, avec vérification de l'heure du match. */
@@ -27,7 +28,8 @@ export function usePredict() {
         const error = validatePrediction(fresh, winnerId, sets);
         if (error) throw new Error(error);
         await repo.savePrediction({ userId: user.id, matchId: match.id, winnerId, sets });
-        toast.show("Prono enregistré ✓");
+        toast.show("Prono validé ! 🎾");
+        celebrate();
       }
     } catch (e) {
       toast.show(e instanceof Error ? e.message : "Erreur", "error");

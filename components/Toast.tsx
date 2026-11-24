@@ -16,14 +16,14 @@ export function useToast() {
 
   const node = message ? (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-24 z-40 flex justify-center px-4 lg:bottom-8 lg:pl-64"
+      className="pointer-events-none fixed inset-x-0 bottom-24 z-40 flex justify-center px-4 lg:bottom-8 lg:pl-72"
       role="status"
       aria-live="polite"
     >
       <div
         key={message.id}
-        className={`animate-fade-up rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-float ${
-          message.tone === "ok" ? "bg-court-900" : "bg-danger"
+        className={`animate-rise rounded-2xl border-2 px-5 py-3 font-display text-base font-semibold text-white shadow-pop ${
+          message.tone === "ok" ? "border-court-900 bg-court-700" : "border-[#8e1b27] bg-danger"
         }`}
       >
         {message.text}

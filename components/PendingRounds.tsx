@@ -1,6 +1,5 @@
 import type { PendingRound } from "@/lib/providers/types";
 import { formatTime } from "@/lib/format";
-import { ClockIcon } from "./icons";
 
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
@@ -15,19 +14,22 @@ export function PendingRounds({ rounds }: { rounds: PendingRound[] }) {
       {rounds.map((r) => (
         <div
           key={r.round}
-          className="flex items-start gap-4 rounded-2xl border-2 border-dashed border-line-strong bg-surface/60 px-5 py-4"
+          className="flex items-start gap-4 rounded-3xl border-[3px] border-dashed border-clay-200 bg-surface/70 px-5 py-4"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-subtle text-ink-3" aria-hidden>
-            <ClockIcon width={20} height={20} />
+          <span
+            className="flex h-12 w-12 shrink-0 animate-wiggle items-center justify-center rounded-2xl border-2 border-clay-200 bg-clay-50 text-2xl"
+            aria-hidden
+          >
+            🔒
           </span>
           <div className="min-w-0">
-            <p className="font-display text-lg leading-tight font-bold tracking-wide text-court-900 uppercase">
+            <p className="font-display text-xl leading-tight font-semibold text-clay-600">
               {r.round}
-              <span className="ml-2 font-sans text-sm font-medium tracking-normal text-ink-3 normal-case">
+              <span className="ml-2 font-sans text-sm font-bold text-ink-3">
                 {formatTime(r.startTime)} · {r.count} match{r.count > 1 ? "s" : ""}
               </span>
             </p>
-            <p className="mt-0.5 text-sm text-ink-2">
+            <p className="mt-0.5 text-sm font-semibold text-ink-2">
               {r.waitingFor
                 ? `Les joueurs seront connus à l'issue des ${lower(r.waitingFor)}. Le match s'affichera alors ici.`
                 : "Les joueurs ne sont pas encore connus."}

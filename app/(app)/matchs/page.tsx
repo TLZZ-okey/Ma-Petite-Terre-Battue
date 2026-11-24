@@ -73,6 +73,7 @@ export default function MatchsPage() {
     <div>
       <PageHeader
         title="Matchs"
+        emoji="🎾"
         subtitle={<span className="first-letter:uppercase">{formatDayLong(parseDayKey(day))}</span>}
         actions={
           ENABLED_TOURS.length > 1 ? (
@@ -81,26 +82,38 @@ export default function MatchsPage() {
         }
       />
 
-      <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mt-1 bg-canvas/90 px-4 py-2 backdrop-blur sm:px-0 lg:top-0">
+      <div className="sticky top-[calc(64px+env(safe-area-inset-top))] z-20 -mt-1 bg-canvas/90 px-4 py-1 backdrop-blur sm:px-0 lg:top-0">
         <DayPicker now={now} value={day} onChange={setDay} counts={countsByDay} />
       </div>
 
       <div className="mt-4 px-4 sm:px-0 lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8">
         <div className="min-w-0">
           {dayMatches && total > 0 && (
-            <p className="mb-4 text-sm text-ink-2" aria-live="polite">
+            <p
+              className={cx(
+                "mb-4 flex items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-bold",
+                toPredict > 0
+                  ? "border-clay-200 bg-clay-50 text-clay-700"
+                  : upcoming.length > 0
+                    ? "border-court-200 bg-court-50 text-court-700"
+                    : "border-line bg-surface text-ink-2",
+              )}
+              aria-live="polite"
+            >
               {toPredict > 0 ? (
                 <>
-                  <strong className="font-semibold text-clay-600">
-                    {toPredict} match{toPredict > 1 ? "s" : ""} à pronostiquer
-                  </strong>{" "}
-                  · {predicted}/{total} pronostiqués
+                  <span aria-hidden>🔥</span>
+                  <span>
+                    {toPredict} match{toPredict > 1 ? "s" : ""} à pronostiquer · {predicted}/{total} faits
+                  </span>
                 </>
               ) : upcoming.length > 0 ? (
-                <span className="font-semibold text-court-700">Tous les matchs à venir sont pronostiqués 👏</span>
+                <>
+                  <span aria-hidden>🙌</span> Tous les matchs à venir sont pronostiqués, bravo !
+                </>
               ) : (
                 <>
-                  {predicted}/{total} matchs pronostiqués ce jour
+                  <span aria-hidden>📋</span> {predicted}/{total} matchs pronostiqués ce jour
                 </>
               )}
             </p>
@@ -116,7 +129,7 @@ export default function MatchsPage() {
           )}
 
           <details className="group mb-4 lg:hidden">
-            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-clay-600">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-extrabold text-clay-600">
               <InfoIcon width={16} height={16} /> Comment ça marche ?
             </summary>
             <RulesCard className="mt-3" />
@@ -141,20 +154,31 @@ export default function MatchsPage() {
                 const clay = t.surface === "terre-battue";
                 return (
                   <section key={t.id} aria-labelledby={`t-${t.id}`}>
-                    <div className="mb-3 flex items-center gap-3">
-                      <span className={cx("h-9 w-1.5 shrink-0 rounded-full", clay ? "bg-clay-500" : "bg-court-500")} aria-hidden />
-                      <div className="min-w-0 flex-1">
-                        <h2 id={`t-${t.id}`} className="truncate font-display text-xl leading-tight font-bold tracking-wide text-court-900 uppercase">
+                    <div
+                      className={cx(
+                        "relative mb-4 flex items-center gap-3 overflow-hidden rounded-3xl border-2 px-5 py-4 text-white",
+                        clay ? "clay-surface border-clay-700 shadow-chunky-clay" : "border-court-800 bg-court-600 shadow-chunky-court",
+                      )}
+                    >
+                      <span className="tennis-ball absolute -right-5 -bottom-6 h-20 w-20 opacity-80" aria-hidden />
+                      <span className="relative text-3xl" aria-hidden>
+                        🏟️
+                      </span>
+                      <div className="relative min-w-0 flex-1">
+                        <h2
+                          id={`t-${t.id}`}
+                          className="font-display text-2xl leading-tight font-bold drop-shadow-[0_2px_0_rgb(0_0_0_/_0.2)]"
+                        >
                           {t.name}
                         </h2>
-                        <p className="truncate text-xs text-ink-3">
+                        <p className="truncate text-sm font-bold text-white/90">
                           {joinInfo(group[0].tour, t.category, t.city, group[0].round)}
                         </p>
                       </div>
                       <span
                         className={cx(
-                          "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                          clay ? "bg-clay-50 text-clay-700" : "bg-court-50 text-court-700",
+                          "relative hidden shrink-0 rounded-full border-2 border-white bg-white px-3 py-1 text-xs font-extrabold sm:inline",
+                          clay ? "text-clay-700" : "text-court-700",
                         )}
                       >
                         {SURFACE_LABELS[t.surface]}

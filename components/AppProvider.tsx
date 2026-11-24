@@ -156,8 +156,8 @@ export function useApp(): AppContextValue {
 
 export function SplashScreen() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-court-900" role="status">
-      <div className="h-12 w-12 animate-bounce rounded-full bg-ball shadow-lg" />
+    <div className="clay-surface flex min-h-dvh items-center justify-center" role="status">
+      <div className="tennis-ball h-16 w-16 animate-bounce" />
       <span className="sr-only">Chargement…</span>
     </div>
   );

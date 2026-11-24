@@ -1,70 +1,92 @@
 @import "tailwindcss";
 
 /*
- * Système de design « Roland-Garros »
- * - Vert court (primaire, navigation, succès) ; terre battue (accent, actions) ;
- *   jaune balle (décoratif uniquement) ; neutres chauds (fonds, bordures, textes).
- * - Les couleurs de texte respectent un contraste AA (≥ 4,5:1) sur leur fond.
+ * Charte « jeu » Roland-Garros
+ * - Orange terre battue + blanc : couleurs dominantes (fonds, actions, accents).
+ * - Vert Roland-Garros : succès et éléments « validés ».
+ * - Jaune balle : récompenses (points, XP, badges).
+ * - Textes brun foncé, chauds, au contraste AA (≥ 4,5:1) ; l'orange vif clay-500
+ *   n'est utilisé que pour les décors et les très gros titres (≥ 3:1).
+ * - Relief « jeu » : bordures épaisses, ombres pleines décalées, boutons qui s'enfoncent.
  */
 @theme {
-  /* Vert court */
-  --color-court-50: #ecf5f1;
-  --color-court-100: #d4e9df;
-  --color-court-200: #a9d2bf;
-  --color-court-500: #1d7a5a;
-  --color-court-600: #126b50;
+  /* Terre battue (couleur principale) */
+  --color-clay-50: #fff3e9;
+  --color-clay-100: #ffe3cf;
+  --color-clay-200: #ffc49d;
+  --color-clay-300: #ff9e64;
+  --color-clay-400: #ff8340;
+  --color-clay-500: #f26a21;
+  --color-clay-600: #c9450a;
+  --color-clay-700: #a8390a;
+  --color-clay-800: #7e2b08;
+  --color-clay-900: #571d05;
+
+  /* Vert Roland-Garros (succès) */
+  --color-court-50: #e9f6ef;
+  --color-court-100: #cdebdb;
+  --color-court-200: #9fd6b9;
+  --color-court-500: #1f8a63;
+  --color-court-600: #137050;
   --color-court-700: #0e5a43;
-  --color-court-800: #0b4a37;
-  --color-court-900: #07362a;
-  --color-court-950: #04241c;
+  --color-court-800: #0a4635;
+  --color-court-900: #063326;
 
-  /* Terre battue */
-  --color-clay-50: #fdf2ec;
-  --color-clay-100: #f9dfd0;
-  --color-clay-200: #f2bd9f;
-  --color-clay-400: #df7a45;
-  --color-clay-500: #c95a22;
-  --color-clay-600: #b14a1a;
-  --color-clay-700: #933c16;
-
-  /* Balle */
-  --color-ball: #dbe55c;
+  /* Balle (récompenses) */
+  --color-ball: #e4f25a;
+  --color-ball-dark: #b9c92a;
 
   /* Neutres chauds */
-  --color-canvas: #f6f3ee;
+  --color-canvas: #fff7ef;
   --color-surface: #ffffff;
-  --color-subtle: #f1ede6;
-  --color-line: #e5dfd5;
-  --color-line-strong: #d2cabc;
-  --color-ink: #16201b;
-  --color-ink-2: #46524c;
-  --color-ink-3: #67736c;
+  --color-subtle: #fff0e4;
+  --color-line: #f6dcc9;
+  --color-line-strong: #eabfa0;
+  --color-ink: #2b1a10;
+  --color-ink-2: #5e3b28;
+  --color-ink-3: #8c5a3f;
 
   /* États */
-  --color-danger: #b4232f;
-  --color-danger-50: #fcebed;
+  --color-danger: #c42636;
+  --color-danger-50: #fdecee;
   --color-gold: #8f6400;
   --color-gold-50: #fff4d6;
-  --color-gold-400: #e3a521;
+  --color-gold-400: #f2b91c;
+  --color-silver: #a8b3bb;
+  --color-bronze: #cd7f3a;
 
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif,
+  --font-sans: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji";
-  --font-display: "Barlow Condensed", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka Variable", "Nunito Variable", ui-rounded, system-ui, sans-serif;
 
-  --shadow-card: 0 1px 2px rgb(22 32 27 / 0.05), 0 1px 3px rgb(22 32 27 / 0.06);
-  --shadow-raised: 0 4px 12px rgb(22 32 27 / 0.08), 0 2px 4px rgb(22 32 27 / 0.05);
-  --shadow-float: 0 12px 32px rgb(7 54 42 / 0.18);
+  /* Ombres « jeu » : pleines et décalées vers le bas */
+  --shadow-chunky: 0 4px 0 0 var(--color-line-strong);
+  --shadow-chunky-clay: 0 4px 0 0 var(--color-clay-800);
+  --shadow-chunky-court: 0 4px 0 0 var(--color-court-900);
+  --shadow-pop: 0 10px 30px -8px rgb(201 69 10 / 0.35);
 
-  --animate-pop: pop 0.22s ease-out;
-  --animate-fade-up: fade-up 0.25s ease-out;
+  --animate-pop: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-rise: rise 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
   @keyframes pop {
-    0% { transform: scale(0.96); }
-    60% { transform: scale(1.03); }
+    0% { transform: scale(0.85); }
+    60% { transform: scale(1.08); }
     100% { transform: scale(1); }
   }
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 }
 
@@ -74,57 +96,120 @@
 
 html,
 body {
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
   color: var(--color-ink);
   -webkit-tap-highlight-color: transparent;
-  font-feature-settings: "cv11", "ss01";
 }
 
-/* Chiffres alignés pour les scores et les points */
+/* Fond : légères stries de terre battue */
+body {
+  background-image: repeating-linear-gradient(-45deg, rgb(242 106 33 / 0.035) 0 2px, transparent 2px 14px);
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
 
 button:not(:disabled),
 [role="tab"],
+[role="radio"],
 a {
   cursor: pointer;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-clay-500);
+  outline: 3px solid var(--color-court-500);
   outline-offset: 2px;
 }
 
-/* Terre battue avec lignes de court, pour les zones « héro » */
-.clay-surface {
-  background-color: var(--color-clay-500);
-  background-image:
-    radial-gradient(120% 80% at 0% 0%, rgb(255 255 255 / 0.12), transparent 60%),
-    radial-gradient(80% 60% at 100% 100%, rgb(0 0 0 / 0.12), transparent 60%),
-    repeating-linear-gradient(45deg, rgb(0 0 0 / 0.025) 0 2px, transparent 2px 6px);
-}
+@layer components {
+  /* Bouton « jeu » : s'enfonce quand on clique */
+  .press {
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.08s ease,
+      background-color 0.15s ease;
+  }
+  .press:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 0 rgb(0 0 0 / 0.15);
+  }
 
-.court-lines {
-  position: relative;
-  isolation: isolate;
-}
-.court-lines::before {
-  content: "";
-  position: absolute;
-  inset: 14px;
-  border: 2px solid rgb(255 255 255 / 0.55);
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: -1;
-}
-.court-lines::after {
-  content: "";
-  position: absolute;
-  inset: 14px 50%;
-  border-left: 2px solid rgb(255 255 255 / 0.35);
-  pointer-events: none;
-  z-index: -1;
+  /* Surface terre battue avec lignes de court */
+  .clay-surface {
+    background-color: var(--color-clay-500);
+    background-image:
+      radial-gradient(120% 90% at 10% 0%, rgb(255 255 255 / 0.18), transparent 55%),
+      radial-gradient(80% 60% at 100% 100%, rgb(0 0 0 / 0.12), transparent 60%),
+      repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.035) 0 2px, transparent 2px 10px);
+  }
+  .court-lines {
+    position: relative;
+    isolation: isolate;
+  }
+  .court-lines::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 3px solid rgb(255 255 255 / 0.7);
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .court-lines::after {
+    content: "";
+    position: absolute;
+    inset: 12px 50%;
+    border-left: 3px solid rgb(255 255 255 / 0.45);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Balle de tennis dessinée en CSS (décor) */
+  .tennis-ball {
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.55), transparent 45%),
+      var(--color-ball);
+    position: relative;
+    box-shadow: inset -4px -6px 0 rgb(0 0 0 / 0.08);
+  }
+  .tennis-ball::before,
+  .tennis-ball::after {
+    content: "";
+    position: absolute;
+    top: 8%;
+    bottom: 8%;
+    width: 45%;
+    border: 3px solid rgb(255 255 255 / 0.9);
+    border-radius: 9999px;
+  }
+  .tennis-ball::before {
+    left: -22%;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+  .tennis-ball::after {
+    right: -22%;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  /* Confettis (voir components/Celebration.tsx) */
+  @keyframes confetti-fall {
+    0% { transform: translate3d(0, 0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate3d(var(--dx), 70vh, 0) rotate(var(--rot)); opacity: 0; }
+  }
+  .confetti {
+    position: absolute;
+    top: -12px;
+    width: 10px;
+    height: 14px;
+    border-radius: 3px;
+    animation: confetti-fall var(--dur) cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+  }
 }
 
 .no-scrollbar {
@@ -146,7 +231,11 @@ a {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .confetti {
+    display: none;
   }
 }

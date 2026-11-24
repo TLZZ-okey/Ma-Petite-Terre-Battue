@@ -39,17 +39,22 @@ vider les deux cases retire le prono.
   et colonne latérale (total, règles, mini-classement).
 - **PWA** : manifeste, icônes, service worker (installable sur l'écran d'accueil, pages consultables hors ligne).
 
-## Design
+## Design : un vrai jeu aux couleurs de Roland-Garros
 
-Système de design inspiré de Roland-Garros, défini dans `app/globals.css` (jetons Tailwind) et `components/ui.tsx` :
+Charte définie dans `app/globals.css` (jetons Tailwind) et `components/ui.tsx` :
 
-- **Couleurs** : vert court (`court-*`, couleur principale : navigation, succès), terre battue (`clay-*`, accent et
-  actions), jaune balle (décoratif), neutres chauds pour les fonds et les textes. Les textes respectent un contraste
-  AA (≥ 4,5:1).
-- **Typographie** : Barlow Condensed (titres, scores, chiffres) et Inter (texte), embarquées localement.
-- **Mise en page** : barre latérale sur ordinateur, barre supérieure et onglets en bas sur mobile ; cartes de match en
-  lignes (joueur · gain · sets) identiques pour les matchs à venir, en cours et terminés.
-- **Accessibilité** : focus visible, lien d'évitement, libellés pour les lecteurs d'écran, cibles tactiles de 44 px,
+- **Couleurs** : orange terre battue (`clay-*`) et blanc dominants, vert Roland-Garros (`court-*`) pour les succès,
+  jaune balle (`ball`) pour les récompenses. Textes brun chaud au contraste AA (≥ 4,5:1) ; l'orange vif n'est utilisé
+  que pour les décors et les très gros titres.
+- **Typographie** : Fredoka (titres, chiffres) et Nunito (texte), polices rondes embarquées localement.
+- **Relief « jeu »** : cartes et boutons épais à ombre pleine qui s'enfoncent au clic, balles de tennis animées,
+  confettis quand un prono est validé (désactivés si l'appareil demande moins d'animations).
+- **Mécaniques de jeu** (`lib/gamification.ts`, calculées à partir des pronos, rien de plus à stocker) :
+  - 8 **niveaux** de « Ramasseur de balles » à « Légende de la terre battue », avec barre d'XP ;
+  - **séries** de bons pronos 🔥 (en cours et record) ;
+  - 8 **badges** à débloquer (premier prono, score exact, outsider trouvé, 3 d'affilée…) avec leur progression ;
+  - **défi du jour** : pronostiquer tous les matchs de la journée.
+- **Accessibilité** : focus visible, lien d'évitement, libellés pour les lecteurs d'écran, cibles tactiles ≥ 44 px,
   respect de « réduire les animations ».
 
 ## Données réelles : The Odds API + SportScore
@@ -102,7 +107,7 @@ Sans clé (ou avec `NEXT_PUBLIC_MATCH_SOURCE=mock`), l'app garde les matchs de d
 
 ## Stack
 
-- Polices Inter et Barlow Condensed via Fontsource (sans appel réseau)
+- Polices Fredoka et Nunito via Fontsource (sans appel réseau)
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS 4 (thème défini dans `app/globals.css`)
 - Vitest pour les tests unitaires

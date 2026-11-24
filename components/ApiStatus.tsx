@@ -47,7 +47,7 @@ export function ApiStatusSection() {
 
   return (
     <Card className="p-5">
-      <p className="font-display text-lg font-bold tracking-wide text-court-900 uppercase">Données en direct</p>
+      <p className="font-display text-xl font-semibold text-ink">📡 Données en direct</p>
       <p className="mt-1 text-sm text-ink-3">
         Programme et cotes : <strong className="font-semibold text-ink-2">The Odds API</strong>
         {followed && <> ({followed} uniquement)</>}. Scores : <strong className="font-semibold text-ink-2">SportScore</strong>.
@@ -151,7 +151,7 @@ export function ApiNotice() {
   }
   if (!message) return null;
   return (
-    <p role="status" className="mb-4 flex gap-3 rounded-xl border border-clay-200 bg-clay-50 px-4 py-3 text-sm text-ink-2">
+    <p role="status" className="mb-4 flex gap-3 rounded-2xl border-2 border-clay-200 bg-clay-50 px-4 py-3 text-sm font-bold text-clay-800">
       <InfoIcon width={18} height={18} className="mt-0.5 shrink-0 text-clay-600" />
       {message}
     </p>

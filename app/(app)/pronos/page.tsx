@@ -69,19 +69,20 @@ export default function PronosPage() {
   return (
     <div className="px-4 sm:px-0">
       <div className="-mx-4 sm:mx-0">
-        <PageHeader title="Mes pronos" subtitle="Pronostique les prochains matchs et suis tes résultats" />
+        <PageHeader title="Mes pronos" emoji="📝" subtitle="Pronostique les prochains matchs et suis tes résultats" />
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-        <StatCard label="Points" value={formatPoints(stats?.points ?? 0)} tone="clay" />
-        <StatCard label="Pronos joués" value={stats?.total ?? 0} />
+        <StatCard emoji="🎾" label="Points" value={formatPoints(stats?.points ?? 0)} tone="clay" />
+        <StatCard emoji="📝" label="Pronos joués" value={stats?.total ?? 0} />
         <StatCard
+          emoji="📈"
           label="Réussite"
           value={`${successRate}%`}
           hint={stats?.settled ? `${stats.won} sur ${stats.settled} terminés` : "Aucun match terminé"}
           tone="court"
         />
-        <StatCard label="Scores exacts" value={stats?.perfect ?? 0} tone="gold" />
+        <StatCard emoji="🎯" label="Scores exacts" value={stats?.perfect ?? 0} tone="gold" />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
@@ -96,8 +97,8 @@ export default function PronosPage() {
           ]}
         />
         {tab === "upcoming" ? (
-          <p className="text-sm text-ink-2">
-            <strong className="tabular font-semibold text-ink">
+          <p className="rounded-2xl border-2 border-clay-200 bg-clay-50 px-4 py-2 text-sm font-bold text-clay-700">
+            <strong className="tabular font-black">
               {upcomingPredicted}/{upcomingTotal}
             </strong>{" "}
             matchs à venir pronostiqués
@@ -131,9 +132,9 @@ export default function PronosPage() {
           <div className="space-y-8">
             {groups.map(([day, list]) => (
               <section key={day}>
-                <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-ink">
+                <h2 className="mb-3 flex items-baseline gap-2 font-display text-xl font-semibold text-ink">
                   <span className="first-letter:uppercase">{formatDayLong(parseDayKey(day))}</span>
-                  <span className="font-normal text-ink-3">
+                  <span className="font-sans text-sm font-bold text-ink-3">
                     · {list.length} match{list.length > 1 ? "s" : ""}
                   </span>
                 </h2>

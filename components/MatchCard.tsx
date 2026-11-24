@@ -49,7 +49,7 @@ function CardShell({ children, accent }: { children: ReactNode; accent?: string 
   return (
     <article
       className={cx(
-        "flex flex-col overflow-hidden rounded-2xl border bg-surface shadow-card transition-shadow hover:shadow-raised",
+        "flex animate-rise flex-col overflow-hidden rounded-3xl border-2 bg-surface shadow-chunky transition-transform hover:-translate-y-0.5",
         accent ?? "border-line",
       )}
     >
@@ -61,20 +61,20 @@ function CardShell({ children, accent }: { children: ReactNode; accent?: string 
 function CardHeader({ match, showContext, status }: { match: MatchState; showContext?: boolean; status: ReactNode }) {
   const date = new Date(match.startTime).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
   return (
-    <header className="flex items-start gap-3 border-b border-line px-4 py-3">
+    <header className="flex items-start gap-3 border-b-2 border-line bg-subtle px-4 py-3">
       <div className="min-w-0 flex-1">
         {showContext ? (
           <>
-            <p className="tabular text-sm font-semibold whitespace-nowrap text-ink first-letter:uppercase">
+            <p className="tabular font-display text-base font-semibold whitespace-nowrap text-ink first-letter:uppercase">
               {date} · {formatTime(match.startTime)}
             </p>
-            <p className="mt-0.5 truncate text-xs text-ink-3">
+            <p className="mt-0.5 truncate text-xs font-bold text-ink-3">
               {joinInfo(match.tournament.name, match.round, SURFACE_LABELS[match.tournament.surface])}
             </p>
           </>
         ) : (
-          <p className="flex items-center gap-1.5 text-sm">
-            <span className="tabular font-semibold text-ink">{formatTime(match.startTime)}</span>
+          <p className="flex items-center gap-1.5 text-sm font-bold">
+            <span className="tabular font-display text-lg font-semibold text-ink">{formatTime(match.startTime)}</span>
             {/* Court inconnu avec les données d'API : pas de séparateur orphelin. */}
             {match.court && (
               <>
@@ -97,9 +97,9 @@ function PlayerIdentity({ player, strong }: { player: Player; strong?: boolean }
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <span
         className={cx(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-subtle ring-1 ring-line",
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-line bg-surface",
           // Pays inconnu (joueur hors classement ESPN) : initiales à la place du drapeau.
-          player.country ? "text-xl" : "text-xs font-semibold text-court-800",
+          player.country ? "text-2xl" : "text-xs font-black text-clay-700",
         )}
         title={countryLabel(player.country, player.countryName) || undefined}
         aria-hidden
@@ -107,12 +107,12 @@ function PlayerIdentity({ player, strong }: { player: Player; strong?: boolean }
         {playerBadge(player)}
       </span>
       <span className="min-w-0">
-        <span className={cx("block truncate text-[15px] leading-tight", strong ? "font-bold text-court-900" : "font-medium text-ink")}>
+        <span className={cx("block truncate font-display text-[17px] leading-tight", strong ? "font-semibold text-clay-700" : "font-medium text-ink")}>
           <span className="sm:hidden">{shortName(player.name)}</span>
           <span className="hidden sm:inline">{player.name}</span>
         </span>
         {(player.country || player.ranking) && (
-          <span className="tabular block truncate text-xs text-ink-3">
+          <span className="tabular block truncate text-xs font-bold text-ink-3">
             {joinInfo(countryLabel(player.country, player.countryName), player.ranking && `n°${player.ranking}`)}
           </span>
         )}
@@ -171,25 +171,27 @@ function OpenCard({ match, prediction, busy, onPredict, showContext }: MatchCard
     );
   } else if (saved && !busy) {
     status = (
-      <Badge tone="court">
-        <CheckIcon width={12} height={12} strokeWidth={3} /> Enregistré
+      <Badge tone="court" className="animate-pop">
+        <CheckIcon width={12} height={12} strokeWidth={3.5} /> Prono validé
       </Badge>
     );
+  } else if (open) {
+    status = <Badge tone="clay">🎯 À toi de jouer</Badge>;
   } else {
     status = <Badge tone="neutral">{match.tour}</Badge>;
   }
 
   return (
-    <CardShell accent={saved && match.status === "upcoming" ? "border-court-200" : undefined}>
+    <CardShell accent={saved && match.status === "upcoming" ? "border-court-200" : error ? "border-danger/40" : undefined}>
       <CardHeader match={match} showContext={showContext} status={status} />
 
-      <div className="px-2 pt-2 pb-2">
-        <div className="flex items-center gap-3 px-2 pb-1 text-[10px] font-semibold tracking-wider text-ink-3 uppercase">
+      <div className="px-3 pt-2 pb-3">
+        <div className="flex items-center gap-3 px-2 pb-1 text-[11px] font-extrabold tracking-wide text-ink-3 uppercase">
           <span className="flex-1">Joueur</span>
-          <span className="w-16 text-right" title="Points gagnés si ce joueur gagne">
-            Gain
+          <span className="w-[4.5rem] text-center" title="Points gagnés si ce joueur gagne">
+            À gagner
           </span>
-          <span className="w-12 text-center">Sets</span>
+          <span className="w-14 text-center">Sets</span>
         </div>
 
         {([0, 1] as const).map((index) => {
@@ -197,60 +199,77 @@ function OpenCard({ match, prediction, busy, onPredict, showContext }: MatchCard
           const odds = index === 0 ? match.odds1 : match.odds2;
           const chosen = (open ? draftWinner : prediction?.winnerId) === player.id && !error;
           return (
-            <div
-              key={player.id}
-              className={cx("flex items-center gap-3 rounded-xl px-2 py-2 transition-colors", chosen && "bg-court-50")}
-            >
-              <PlayerIdentity player={player} strong={chosen} />
-              <span
+            <div key={player.id}>
+              {index === 1 && (
+                <div className="relative my-1 flex items-center justify-center" aria-hidden>
+                  <span className="absolute inset-x-2 top-1/2 border-t-2 border-dashed border-line" />
+                  <span className="relative rounded-full border-2 border-clay-200 bg-surface px-2.5 font-display text-xs font-bold text-clay-600">
+                    VS
+                  </span>
+                </div>
+              )}
+              <div
                 className={cx(
-                  "tabular w-16 rounded-lg py-1 text-center text-sm font-semibold transition-colors",
-                  chosen ? "bg-clay-500 text-white" : "bg-subtle text-ink-2",
+                  "flex items-center gap-3 rounded-2xl border-2 px-2 py-2 transition-colors",
+                  chosen ? "border-clay-200 bg-clay-50" : "border-transparent",
                 )}
-                aria-label={`${formatPoints(oddsToPoints(odds))} points si ${player.name} gagne`}
               >
-                +{formatPoints(oddsToPoints(odds))}
-              </span>
-              <label className="sr-only" htmlFor={`${match.id}-s${index}`}>
-                Sets gagnés par {player.name}
-              </label>
-              <input
-                id={`${match.id}-s${index}`}
-                value={shown[index] ?? ""}
-                onChange={(e) => update(index, e.target.value)}
-                onFocus={(e) => e.target.select()}
-                disabled={!open}
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder="–"
-                aria-invalid={!!error}
-                className={cx(
-                  "tabular h-12 w-12 rounded-xl border-2 bg-surface text-center font-display text-2xl font-bold transition outline-none placeholder:text-line-strong disabled:cursor-not-allowed disabled:bg-subtle",
-                  error
-                    ? "border-danger text-danger"
-                    : chosen
-                      ? "border-court-600 text-court-800"
-                      : "border-line-strong text-ink focus:border-court-600",
-                  open && "focus:ring-4 focus:ring-court-100",
-                )}
-              />
+                <PlayerIdentity player={player} strong={chosen} />
+                <span
+                  className={cx(
+                    "tabular flex w-[4.5rem] items-center justify-center gap-1 rounded-full border-2 py-1 font-display text-base font-semibold transition-all",
+                    chosen ? "animate-pop border-ball-dark bg-ball text-ink" : "border-line bg-subtle text-ink-2",
+                  )}
+                  aria-label={`${formatPoints(oddsToPoints(odds))} points si ${player.name} gagne`}
+                >
+                  <span aria-hidden className="text-sm">
+                    🎾
+                  </span>
+                  +{formatPoints(oddsToPoints(odds))}
+                </span>
+                <label className="sr-only" htmlFor={`${match.id}-s${index}`}>
+                  Sets gagnés par {player.name}
+                </label>
+                <input
+                  id={`${match.id}-s${index}`}
+                  value={shown[index] ?? ""}
+                  onChange={(e) => update(index, e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  disabled={!open}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="?"
+                  aria-invalid={!!error}
+                  className={cx(
+                    "tabular h-14 w-14 rounded-2xl border-2 bg-surface text-center font-display text-3xl font-semibold shadow-chunky transition outline-none placeholder:text-line-strong disabled:cursor-not-allowed disabled:bg-subtle disabled:shadow-none",
+                    error
+                      ? "border-danger text-danger"
+                      : chosen
+                        ? "border-clay-600 bg-clay-50 text-clay-700"
+                        : "border-line-strong text-ink focus:border-clay-500",
+                    open && "focus:ring-4 focus:ring-clay-100",
+                  )}
+                />
+              </div>
             </div>
           );
         })}
       </div>
 
-      <footer className="mt-auto flex min-h-10 items-center gap-2 border-t border-line bg-subtle/60 px-4 py-2 text-xs">
+      <footer className="mt-auto flex min-h-11 items-center gap-2 border-t-2 border-line px-4 py-2.5 text-sm font-bold">
         {error ? (
-          <p role="alert" className="font-medium text-danger">
-            {error}
+          <p role="alert" className="text-danger">
+            ⚠️ {error}
           </p>
         ) : match.status === "live" ? (
           <p className="flex items-center gap-1.5 text-ink-2">
-            <LockIcon width={14} height={14} /> Pronos fermés pendant le match
+            <LockIcon width={16} height={16} /> Match en cours : les pronos sont fermés
           </p>
+        ) : saved ? (
+          <p className="text-court-700">✅ C&apos;est noté ! Tu peux encore changer d&apos;avis avant le match.</p>
         ) : (
           <p className="text-ink-3">
-            {need} sets gagnants · saisis le score, il s&apos;enregistre tout seul
+            {need} sets gagnants · entre le score, il s&apos;enregistre tout seul
           </p>
         )}
       </footer>
@@ -263,10 +282,10 @@ function OpenCard({ match, prediction, busy, onPredict, showContext }: MatchCard
 /* ------------------------------------------------------------------ */
 
 const OUTCOMES = {
-  perfect: { tone: "gold", label: "Score exact", accent: "border-gold-400/60" },
-  won: { tone: "court", label: "Gagné", accent: "border-court-200" },
-  lost: { tone: "danger", label: "Perdu", accent: "border-danger/30" },
-  none: { tone: "neutral", label: "Pas de prono", accent: "border-line" },
+  perfect: { label: "Score exact !", emoji: "🎯", banner: "border-ball-dark bg-ball text-ink", accent: "border-ball-dark" },
+  won: { label: "Bien joué !", emoji: "✅", banner: "border-court-800 bg-court-600 text-white", accent: "border-court-200" },
+  lost: { label: "Raté…", emoji: "😬", banner: "border-line bg-subtle text-ink-2", accent: "border-line" },
+  none: { label: "Pas de prono", emoji: "🤷", banner: "border-line bg-subtle text-ink-3", accent: "border-line" },
 } as const;
 
 function FinishedCard({ match, prediction, showContext = true }: MatchCardProps) {
@@ -288,24 +307,24 @@ function FinishedCard({ match, prediction, showContext = true }: MatchCardProps)
 
   return (
     <CardShell accent={style.accent}>
-      <CardHeader match={match} showContext={showContext} status={<Badge tone="neutral">Terminé</Badge>} />
+      <CardHeader match={match} showContext={showContext} status={<Badge tone="neutral">🏁 Terminé</Badge>} />
 
-      <div className="space-y-1 px-2 py-2">
+      <div className="space-y-1 px-3 py-3">
         {rows.map(({ player, won, sets, flip }) => (
-          <div key={player.id} className={cx("flex items-center gap-3 rounded-xl px-2 py-2", won && "bg-court-50")}>
+          <div key={player.id} className={cx("flex items-center gap-3 rounded-2xl border-2 px-2 py-2", won ? "border-court-200 bg-court-50" : "border-transparent")}>
             <PlayerIdentity player={player} strong={won} />
             {won && (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-court-600 text-white" aria-label="Vainqueur">
-                <CheckIcon width={12} height={12} strokeWidth={3} />
+              <span className="shrink-0 text-xl" role="img" aria-label="Vainqueur">
+                🏆
               </span>
             )}
-            <span className="tabular hidden gap-2.5 text-sm min-[400px]:flex" aria-label="Jeux par set">
+            <span className="tabular hidden gap-2.5 text-sm font-bold min-[400px]:flex" aria-label="Jeux par set">
               {result.score.map((s, i) => {
                 const [w, l] = s.split("-").map(Number);
                 const mine = flip ? l : w;
                 const theirs = flip ? w : l;
                 return (
-                  <span key={i} className={cx("w-4 text-center", mine > theirs ? "font-semibold text-ink" : "text-ink-3")}>
+                  <span key={i} className={cx("w-4 text-center", mine > theirs ? "font-black text-ink" : "text-ink-3")}>
                     {mine}
                   </span>
                 );
@@ -313,8 +332,8 @@ function FinishedCard({ match, prediction, showContext = true }: MatchCardProps)
             </span>
             <span
               className={cx(
-                "tabular flex h-10 w-10 shrink-0 items-center justify-center rounded-lg font-display text-2xl font-bold",
-                won ? "bg-court-700 text-white" : "bg-subtle text-ink-3",
+                "tabular flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 font-display text-2xl font-semibold",
+                won ? "border-court-800 bg-court-600 text-white shadow-chunky-court" : "border-line bg-subtle text-ink-3",
               )}
               aria-label={`${sets} sets`}
             >
@@ -324,26 +343,28 @@ function FinishedCard({ match, prediction, showContext = true }: MatchCardProps)
         ))}
       </div>
 
-      <footer className="mt-auto flex items-center gap-3 border-t border-line bg-subtle/60 px-4 py-2.5">
-        <div className="min-w-0 flex-1 text-xs">
-          {prediction && predictedWinner ? (
-            <>
-              <span className="text-ink-3">Ton prono · </span>
-              <span className="font-semibold text-ink">
-                {shortName(predictedWinner.name)}
-                {predicted ? ` ${predicted[0]}-${predicted[1]}` : ""}
-              </span>
-            </>
-          ) : (
-            <span className="text-ink-3">Tu n&apos;as pas pronostiqué ce match</span>
-          )}
+      <footer className={cx("mt-auto flex items-center gap-3 border-t-2 px-4 py-3", style.banner)}>
+        <span className="text-2xl" aria-hidden>
+          {style.emoji}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-lg leading-tight font-semibold">{style.label}</p>
+          <p className="truncate text-xs font-bold opacity-85">
+            {prediction && predictedWinner
+              ? `Ton prono : ${shortName(predictedWinner.name)}${predicted ? ` ${predicted[0]}-${predicted[1]}` : ""}`
+              : "Tu n'as pas pronostiqué ce match"}
+          </p>
         </div>
-        <Badge tone={style.tone} className="h-7 px-2.5 text-xs">
-          {style.label}
-          {outcome && outcome.outcome !== "pending" && (
-            <span className="tabular ml-1 normal-case">{outcome.points > 0 ? `+${pts(outcome.points)}` : "0 pt"}</span>
-          )}
-        </Badge>
+        {outcome && outcome.outcome !== "pending" && (
+          <span
+            className={cx(
+              "tabular shrink-0 rounded-2xl border-2 px-3 py-1 font-display text-lg font-semibold",
+              outcome.points > 0 ? "border-white/60 bg-white/90 text-clay-700" : "border-line bg-surface text-ink-3",
+            )}
+          >
+            {outcome.points > 0 ? `+${pts(outcome.points)}` : "0 pt"}
+          </span>
+        )}
       </footer>
     </CardShell>
   );

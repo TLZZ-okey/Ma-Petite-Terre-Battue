@@ -4,12 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { formatPoints } from "@/lib/format";
+import { levelFor } from "@/lib/gamification";
 import { SportScoreCredit } from "./ApiStatus";
 import { SplashScreen, useApp } from "./AppProvider";
 import { Avatar } from "./Avatar";
+import { Celebration } from "./Celebration";
 import { useMyPredictions } from "./hooks";
 import { BallIcon, Logo, TicketIcon, TrophyIcon, UserIcon } from "./icons";
-import { cx } from "./ui";
+import { ProgressBar, cx } from "./ui";
 
 const TABS = [
   { href: "/matchs", label: "Matchs", Icon: BallIcon },
@@ -32,13 +34,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-dvh">
       <a
         href="#contenu"
-        className="sr-only z-50 rounded-lg bg-surface px-4 py-2 font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        className="sr-only z-50 rounded-xl bg-surface px-4 py-2 font-bold focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
       >
         Aller au contenu
       </a>
       <Sidebar />
       <TopBar />
-      <main id="contenu" className="pb-28 lg:pb-16 lg:pl-64">
+      <main id="contenu" className="pb-28 lg:pb-16 lg:pl-72">
         <div className="mx-auto w-full max-w-6xl sm:px-6 lg:px-10">
           {children}
           {/* Mention exigée par l'offre gratuite de SportScore (données réelles uniquement). */}
@@ -46,6 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </main>
       <TabBar />
+      <Celebration />
     </div>
   );
 }
@@ -55,23 +58,26 @@ function usePoints() {
   return data?.stats.points ?? 0;
 }
 
-/** Navigation latérale (ordinateur). */
+/** Navigation latérale (ordinateur) : terre battue, carte de joueur avec niveau et XP. */
 function Sidebar() {
   const pathname = usePathname();
   const { user } = useApp();
   const points = usePoints();
+  const lvl = levelFor(points);
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-court-900 text-white lg:flex">
-      <Link href="/matchs" className="flex items-center gap-3 px-6 pt-7 pb-8">
-        <Logo size={40} />
-        <span className="font-display text-xl leading-[1.05] font-bold tracking-wide uppercase">
+    <aside className="clay-surface fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r-4 border-clay-700 text-white lg:flex">
+      <Link href="/matchs" className="flex items-center gap-3 px-6 pt-7 pb-7">
+        <span className="animate-float">
+          <Logo size={48} />
+        </span>
+        <span className="font-display text-2xl leading-[1.02] font-bold drop-shadow-[0_2px_0_rgb(0_0_0_/_0.2)]">
           Ma Petite
           <br />
           Terre Battue
         </span>
       </Link>
 
-      <nav aria-label="Navigation principale" className="flex-1 space-y-1 px-3">
+      <nav aria-label="Navigation principale" className="flex-1 space-y-2 px-4">
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
           return (
@@ -80,12 +86,13 @@ function Sidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cx(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                active ? "bg-white/10 text-white" : "text-white/65 hover:bg-white/5 hover:text-white",
+                "press flex items-center gap-3 rounded-2xl border-2 px-4 py-3 font-display text-lg font-semibold",
+                active
+                  ? "border-white bg-white text-clay-600 shadow-[0_4px_0_0_rgb(0_0_0_/_0.18)]"
+                  : "border-transparent text-white hover:bg-white/15",
               )}
             >
-              {active && <span className="absolute top-2 bottom-2 -left-3 w-1 rounded-r-full bg-clay-400" aria-hidden />}
-              <Icon width={20} height={20} className={active ? "text-clay-200" : ""} />
+              <Icon width={24} height={24} />
               {label}
             </Link>
           );
@@ -95,12 +102,26 @@ function Sidebar() {
       {user && (
         <Link
           href="/profil"
-          className="m-3 flex items-center gap-3 rounded-2xl bg-white/5 p-3 transition-colors hover:bg-white/10"
+          className="press m-4 block rounded-3xl border-2 border-white/40 bg-white/15 p-4 backdrop-blur-sm hover:bg-white/20"
         >
-          <Avatar name={user.username} color={user.avatarColor} size={40} ring={false} />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold">{user.username}</span>
-            <span className="tabular block text-xs text-white/60">{formatPoints(points)} points</span>
+          <span className="flex items-center gap-3">
+            <span className="relative">
+              <Avatar name={user.username} color={user.avatarColor} size={46} />
+              <span className="absolute -right-1.5 -bottom-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-ball text-[11px] font-black text-ink">
+                {lvl.current.level}
+              </span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-display text-lg leading-tight font-semibold">{user.username}</span>
+              <span className="block truncate text-xs font-bold text-white/85">
+                {lvl.current.emoji} {lvl.current.title}
+              </span>
+            </span>
+          </span>
+          <ProgressBar value={lvl.progress} label="Progression vers le niveau suivant" className="mt-3 border-white/30 bg-white/20" />
+          <span className="tabular mt-1.5 flex justify-between text-xs font-bold text-white/90">
+            <span>{formatPoints(points)} pts</span>
+            <span>{lvl.next ? `encore ${formatPoints(lvl.toNext)} pts` : "niveau max !"}</span>
           </span>
         </Link>
       )}
@@ -111,20 +132,25 @@ function Sidebar() {
 /** Barre supérieure (mobile et tablette). */
 function TopBar() {
   const points = usePoints();
+  const lvl = levelFor(points);
   return (
-    <header className="pt-safe sticky top-0 z-30 bg-court-900 text-white lg:hidden">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
+    <header className="clay-surface pt-safe sticky top-0 z-30 border-b-4 border-clay-700 text-white lg:hidden">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Link href="/matchs" className="flex min-w-0 flex-1 items-center gap-2.5">
-          <Logo size={32} />
-          <span className="truncate font-display text-lg font-bold tracking-wide uppercase">Ma Petite Terre Battue</span>
+          <Logo size={38} />
+          <span className="truncate font-display text-xl font-bold drop-shadow-[0_2px_0_rgb(0_0_0_/_0.2)]">
+            Ma Petite Terre Battue
+          </span>
         </Link>
         <Link
-          href="/pronos"
-          className="tabular flex items-center gap-1.5 rounded-full bg-white/10 py-1.5 pr-3 pl-2 text-sm font-semibold"
-          aria-label={`${formatPoints(points)} points`}
+          href="/profil"
+          className="press tabular flex items-center gap-2 rounded-2xl border-2 border-white bg-white py-1 pr-3 pl-1 font-display font-semibold text-clay-600 shadow-[0_3px_0_0_rgb(0_0_0_/_0.2)]"
+          aria-label={`Niveau ${lvl.current.level}, ${formatPoints(points)} points`}
         >
-          <span className="h-2.5 w-2.5 rounded-full bg-ball" aria-hidden />
-          {formatPoints(points)} pts
+          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-ball text-sm font-black text-ink">
+            {lvl.current.level}
+          </span>
+          {formatPoints(points)}
         </Link>
       </div>
     </header>
@@ -137,7 +163,7 @@ function TabBar() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur lg:hidden"
+      className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t-2 border-line bg-surface/95 backdrop-blur lg:hidden"
     >
       <ul className="mx-auto flex max-w-xl">
         {TABS.map(({ href, label, Icon }) => {
@@ -148,14 +174,14 @@ function TabBar() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "flex flex-col items-center gap-1 pt-2 pb-2.5 text-[11px] font-semibold transition-colors",
-                  active ? "text-court-800" : "text-ink-3 hover:text-ink",
+                  "flex flex-col items-center gap-0.5 pt-2 pb-2.5 font-display text-xs font-semibold transition-colors",
+                  active ? "text-clay-600" : "text-ink-3 hover:text-ink",
                 )}
               >
                 <span
                   className={cx(
-                    "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
-                    active && "bg-court-50 text-clay-600",
+                    "flex h-9 w-14 items-center justify-center rounded-2xl transition-all",
+                    active && "-translate-y-0.5 bg-clay-600 text-white shadow-chunky-clay",
                   )}
                 >
                   <Icon width={22} height={22} />
