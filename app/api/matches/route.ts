@@ -1,6 +1,6 @@
 import { syncConfig } from "@/lib/server/config";
 import { refresh, toMatchState } from "@/lib/server/sync";
-import { isTourEnabled } from "@/lib/settings";
+import { isOddsKeyEnabled } from "@/lib/settings";
 
 // Données toujours fraîches : jamais de mise en cache de la réponse.
 export const dynamic = "force-dynamic";
@@ -21,8 +21,8 @@ export async function GET(request: Request) {
 
   const data = await refresh(cfg);
   const now = new Date();
-  // Les matchs d'un circuit désactivé (ex. WTA déjà stockés) ne sont plus servis.
-  let stored = Object.values(data.matches).filter((s) => isTourEnabled(s.match.tour));
+  // Les matchs d'un circuit ou d'un tournoi non suivi (ex. déjà stockés avant le réglage) ne sont plus servis.
+  let stored = Object.values(data.matches).filter((s) => isOddsKeyEnabled(s.match.tournament.id));
 
   const ids = params.get("ids");
   if (ids !== null) {

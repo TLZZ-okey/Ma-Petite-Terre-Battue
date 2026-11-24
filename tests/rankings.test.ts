@@ -81,3 +81,15 @@ describe("calendrier des classements (chaque lundi, 12:00 UTC)", () => {
     expect(rankingsDue(failed, at("2026-11-23T13:10:00Z"))).toBe(true);
   });
 });
+
+describe("réglages des tournois suivis", () => {
+  it("reconnaît Roland-Garros ATP et écarte le reste", async () => {
+    const { isOddsKeyEnabled, parseOddsKey, enabledTournamentsLabel } = await import("../lib/settings");
+    expect(parseOddsKey("tennis_atp_french_open")).toEqual({ tour: "ATP", tournament: "french_open" });
+    expect(isOddsKeyEnabled("tennis_atp_french_open")).toBe(true);
+    expect(isOddsKeyEnabled("tennis_wta_french_open")).toBe(false);
+    expect(isOddsKeyEnabled("tennis_atp_wimbledon")).toBe(false);
+    expect(isOddsKeyEnabled("rg-atp")).toBe(false); // identifiant du mock, sans rapport avec The Odds API
+    expect(enabledTournamentsLabel()).toBe("Roland-Garros");
+  });
+});

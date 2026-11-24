@@ -36,6 +36,19 @@ describe("The Odds API", () => {
     ).toEqual(["tennis_atp_french_open"]);
   });
 
+  it("n'interroge que Roland-Garros (ATP), réglage de lib/settings.ts", () => {
+    const sport = (key: string) => ({ key, group: "Tennis", title: key, description: "", active: true, has_outrights: false });
+    expect(
+      activeTennisKeys([
+        sport("tennis_atp_aus_open_singles"),
+        sport("tennis_atp_wimbledon"),
+        sport("tennis_atp_paris_masters"),
+        sport("tennis_wta_french_open"),
+        sport("tennis_atp_french_open"),
+      ]),
+    ).toEqual(["tennis_atp_french_open"]);
+  });
+
   it("calcule la cote médiane des bookmakers (marché h2h uniquement)", () => {
     expect(consensusOdds(EVENT)).toEqual({ home: 1.22, away: 4.2 });
     expect(consensusOdds({ ...EVENT, bookmakers: [] })).toEqual({ home: null, away: null });
@@ -43,7 +56,8 @@ describe("The Odds API", () => {
 
   it("déduit catégorie, surface et circuit du tournoi", () => {
     expect(tournamentFromSport("tennis_atp_french_open", "ATP French Open")).toMatchObject({
-      name: "ATP French Open",
+      name: "Roland-Garros",
+      city: "Paris",
       category: "Grand Chelem",
       surface: "terre-battue",
     });
