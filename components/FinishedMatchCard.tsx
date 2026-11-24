@@ -112,6 +112,7 @@ function ScoreRow({
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center ${player.country ? "text-xl" : "rounded-full bg-cream text-[10px] font-bold text-rg-dark"}`}
         aria-hidden
+        title={player.countryName || undefined}
       >
         {playerBadge(player)}
       </span>

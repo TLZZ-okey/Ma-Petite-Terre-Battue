@@ -1,7 +1,8 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Match, MatchResult } from "../types";
+import type { Match, MatchResult, Tour } from "../types";
 import type { Quota } from "./oddsApi";
+import type { RankingTable } from "./rankings";
 
 /**
  * Mémoire serveur des matchs vus via les API.
@@ -26,9 +27,16 @@ export interface SyncMeta {
   scoresSample: unknown;
 }
 
+export interface RankingsCache {
+  /** Dernière récupération réussie (ou tentée) auprès d'ESPN. */
+  fetchedAt: string | null;
+  tables: Partial<Record<Tour, RankingTable>>;
+}
+
 export interface StoreData {
   matches: Record<string, StoredMatch>;
   meta: SyncMeta;
+  rankings: RankingsCache;
 }
 
 export interface MatchStore {
@@ -39,6 +47,7 @@ export interface MatchStore {
 export function emptyStore(): StoreData {
   return {
     matches: {},
+    rankings: { fetchedAt: null, tables: {} },
     meta: {
       lastOddsSync: null,
       lastScoresSync: null,
@@ -65,7 +74,11 @@ export function createFileStore(file: string): MatchStore {
     async read() {
       try {
         const parsed = JSON.parse(await readFile(file, "utf8")) as StoreData;
-        return { matches: parsed.matches ?? {}, meta: { ...emptyStore().meta, ...parsed.meta } };
+        return {
+          matches: parsed.matches ?? {},
+          meta: { ...emptyStore().meta, ...parsed.meta },
+          rankings: parsed.rankings ?? emptyStore().rankings,
+        };
       } catch {
         return emptyStore();
       }

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createMemoryStore } from "../lib/server/matchStore";
 import type { Fetcher, OddsApiEvent } from "../lib/server/oddsApi";
@@ -8,7 +9,7 @@ const HOUR = 3600_000;
 
 /** Fausses API : compte les appels pour vérifier l'économie de quota. */
 function fakeApis(opts: { events: () => OddsApiEvent[]; scores: () => unknown[]; detail?: (slug: string) => unknown | null }) {
-  const calls = { sports: 0, odds: 0, scores: 0, details: 0 };
+  const calls = { sports: 0, odds: 0, scores: 0, details: 0, rankings: 0 };
   const fetcher: Fetcher = async (url) => {
     const u = new URL(url);
     const json = (body: unknown, headers: Record<string, string> = {}) =>
@@ -24,6 +25,11 @@ function fakeApis(opts: { events: () => OddsApiEvent[]; scores: () => unknown[];
       calls.odds++;
       expect(u.searchParams.get("markets")).toBe("h2h");
       return json(opts.events(), { "x-requests-remaining": "498", "x-requests-used": "2" });
+    }
+    if (u.hostname === "site.api.espn.com") {
+      calls.rankings++;
+      const tour = u.pathname.includes("/wta/") ? "wta" : "atp";
+      return json(JSON.parse(readFileSync(new URL(`./fixtures/espn-rankings-${tour}.json`, import.meta.url), "utf8")));
     }
     if (u.hostname === "sportscore.com" && u.pathname === "/api/widget/match/") {
       calls.details++;
@@ -65,9 +71,18 @@ describe("synchronisation The Odds API + SportScore", () => {
 
     // 1. Import avant le match.
     let data = await refresh(cfg);
-    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0, details: 0 });
+    expect(calls).toEqual({ sports: 1, odds: 1, scores: 0, details: 0, rankings: 2 });
     expect(data.meta.quota).toEqual({ remaining: 498, used: 2 });
     expect(toMatchState(data.matches.toa_e1, now)).toMatchObject({ status: "upcoming", odds1: 1.22 });
+
+    // Classement et nationalité ajoutés depuis ESPN (Arthur Fils n'est pas dans l'extrait : inchangé).
+    const enriched = toMatchState(data.matches.toa_e1, now, data.rankings);
+    expect(enriched.player1).toMatchObject({ name: "Jannik Sinner", ranking: 2, country: "IT" });
+    expect(enriched.player2).toMatchObject({ name: "Arthur Fils", ranking: null, country: "" });
+
+    // Les classements ne sont redemandés qu'une fois par jour.
+    await refresh(cfg);
+    expect(calls.rankings).toBe(2);
 
     // 2. Rappel immédiat : aucune nouvelle requête (cache).
     await refresh(cfg);
@@ -138,7 +153,7 @@ describe("synchronisation The Odds API + SportScore", () => {
   it("n'appelle pas The Odds API sans clé", async () => {
     const { fetcher, calls } = fakeApis({ events: () => [], scores: () => [] });
     await refresh({ apiKey: undefined, fetcher, store: createMemoryStore(), oddsTtlMs: HOUR, scoresTtlMs: HOUR });
-    expect(calls).toEqual({ sports: 0, odds: 0, scores: 0, details: 0 });
+    expect(calls).toMatchObject({ sports: 0, odds: 0, scores: 0, details: 0 });
   });
 });
 

@@ -1,0 +1,53 @@
+{
+ "rankings": [
+  {
+   "name": "WTA",
+   "type": "wta",
+   "update": "2026-11-19T08:00Z",
+   "ranks": [
+    {
+     "current": 1,
+     "previous": 1,
+     "points": 8099.0,
+     "athlete": {
+      "id": "3126",
+      "firstName": "Elena",
+      "lastName": "Rybakina",
+      "displayName": "Elena Rybakina",
+      "shortname": "E. Rybakina",
+      "flagAltText": "Kazakhstan",
+      "citizenshipCountry": "KAZ"
+     }
+    },
+    {
+     "current": 16,
+     "previous": 16,
+     "points": 2386.0,
+     "athlete": {
+      "id": "1774",
+      "firstName": "Sorana",
+      "lastName": "Cirstea",
+      "displayName": "Sorana Cirstea",
+      "shortname": "S. Cirstea",
+      "flagAltText": "Romania",
+      "citizenshipCountry": "ROM"
+     }
+    },
+    {
+     "current": 136,
+     "previous": 152,
+     "points": 569.0,
+     "athlete": {
+      "id": "3705",
+      "firstName": "Joanna",
+      "lastName": "Garland",
+      "displayName": "Joanna Garland",
+      "shortname": "J. Garland",
+      "flagAltText": "Chinese Taipei",
+      "citizenshipCountry": "TPO"
+     }
+    }
+   ]
+  }
+ ]
+}
