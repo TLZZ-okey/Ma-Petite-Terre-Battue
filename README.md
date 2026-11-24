@@ -25,9 +25,12 @@ vider les deux cases retire le prono.
 
 ## Version 1 (actuelle) : 100 % locale
 
-- **Pas d'API externe** : un générateur déterministe (`lib/mock/generator.ts`) produit un programme de matchs fictif
-  (tableau masculin de Roland-Garros uniquement, joueurs, cotes, horaires) pour chaque jour. Les résultats sont simulés une fois l'heure du match passée,
-  pondérés par les cotes.
+- **Pas d'API externe** : un générateur déterministe (`lib/mock/generator.ts`) simule chaque semaine un **tableau de
+  Roland-Garros à 16 joueurs** (tableau masculin, 3 sets gagnants), têtes de série placées selon leur classement :
+  8es de finale lundi et mardi, quarts mercredi et jeudi, demi-finales vendredi et samedi, finale dimanche. Les
+  vainqueurs passent au tour suivant, et **un match n'apparaît qu'une fois ses deux joueurs connus** (la finale
+  s'affiche quand les deux demi-finales sont terminées) ; en attendant, la page Matchs indique le tour à venir.
+  Les résultats sont simulés une fois l'heure du match passée, pondérés par les cotes.
 - **Pas d'e-mail** : comptes locaux pseudo + mot de passe (haché SHA-256 salé). Comptes et pronos sont stockés dans le
   `localStorage` du navigateur — tous les joueurs d'un même appareil partagent le classement.
 - **Outils de démo** (page Profil) : avancer l'horloge de l'app, terminer les matchs en cours ou simuler tous les résultats

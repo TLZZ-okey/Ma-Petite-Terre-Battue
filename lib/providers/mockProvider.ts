@@ -1,7 +1,7 @@
 import type { KeyValueStorage } from "../repository/localRepository";
-import { generateDay, generateMatch, resolveMatch, simulateResult } from "../mock/generator";
+import { feederIds, generateDay, generateMatch, previousRound, resolveMatch, simulateResult } from "../mock/generator";
 import type { MatchResult, MatchState } from "../types";
-import type { MatchProvider } from "./types";
+import type { MatchProvider, PendingRound } from "./types";
 
 const OVERRIDES_KEY = "mptb:result-overrides";
 
@@ -20,10 +20,35 @@ export function createMockProvider(storage: KeyValueStorage): MockMatchProvider 
     }
   }
 
+  /**
+   * Un match n'est visible qu'une fois ses deux joueurs connus, c'est-à-dire quand
+   * les matchs dont il attend les vainqueurs sont terminés (ex. la finale n'apparaît
+   * qu'après les deux demi-finales).
+   */
+  function isVisible(matchId: string, now: Date, o: Record<string, MatchResult>): boolean {
+    return feederIds(matchId).every((id) => {
+      const feeder = generateMatch(id);
+      return feeder !== undefined && resolveMatch(feeder, now, o[id]).status === "finished";
+    });
+  }
+
   return {
     async getMatchesForDay(day, now) {
       const o = overrides();
-      return generateDay(day).map((m) => resolveMatch(m, now, o[m.id]));
+      return generateDay(day)
+        .filter((m) => isVisible(m.id, now, o))
+        .map((m) => resolveMatch(m, now, o[m.id]));
+    },
+    async getPendingRounds(day, now) {
+      const o = overrides();
+      const pending = new Map<string, PendingRound>();
+      for (const m of generateDay(day)) {
+        if (isVisible(m.id, now, o)) continue;
+        const entry = pending.get(m.round);
+        if (entry) entry.count++;
+        else pending.set(m.round, { round: m.round, count: 1, waitingFor: previousRound(m.round), startTime: m.startTime });
+      }
+      return [...pending.values()];
     },
     async getMatchesByIds(ids, now) {
       const o = overrides();
