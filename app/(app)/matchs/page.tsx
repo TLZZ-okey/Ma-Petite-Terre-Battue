@@ -8,6 +8,7 @@ import { useAsync, useMyPredictions } from "@/components/hooks";
 import { InfoIcon } from "@/components/icons";
 import { MatchCard } from "@/components/MatchCard";
 import { MiniLeaderboard } from "@/components/MiniLeaderboard";
+import { PendingRounds } from "@/components/PendingRounds";
 import { RulesCard } from "@/components/RulesCard";
 import { SummaryCard } from "@/components/SummaryCard";
 import { EmptyState, PageHeader, Segmented, Skeleton, cx } from "@/components/ui";
@@ -34,6 +35,11 @@ export default function MatchsPage() {
 
   const { data: dayMatches, loading, error } = useAsync(
     () => matches.getMatchesForDay(day, now),
+    [day, now.getTime(), dataVersion],
+  );
+  // Matchs prévus dont les joueurs ne sont pas encore connus (tableau des matchs de démo).
+  const { data: pending } = useAsync(
+    async () => (matches.getPendingRounds ? matches.getPendingRounds(day, now) : []),
     [day, now.getTime(), dataVersion],
   );
   const { data: mine } = useMyPredictions();
@@ -81,7 +87,7 @@ export default function MatchsPage() {
 
       <div className="mt-4 px-4 sm:px-0 lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8">
         <div className="min-w-0">
-          {dayMatches && (
+          {dayMatches && total > 0 && (
             <p className="mb-4 text-sm text-ink-2" aria-live="polite">
               {toPredict > 0 ? (
                 <>
@@ -123,7 +129,11 @@ export default function MatchsPage() {
               ))}
             </div>
           ) : groups.length === 0 ? (
-            <EmptyState title="Aucun match ce jour-là">Choisis un autre jour dans le calendrier.</EmptyState>
+            pending && pending.length > 0 ? (
+              <PendingRounds rounds={pending} />
+            ) : (
+              <EmptyState title="Aucun match ce jour-là">Choisis un autre jour dans le calendrier.</EmptyState>
+            )
           ) : (
             <div className="space-y-8">
               {groups.map((group) => {
@@ -164,6 +174,7 @@ export default function MatchsPage() {
                   </section>
                 );
               })}
+              {pending && pending.length > 0 && <PendingRounds rounds={pending} />}
             </div>
           )}
         </div>
