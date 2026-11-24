@@ -28,8 +28,10 @@ export interface SyncMeta {
 }
 
 export interface RankingsCache {
-  /** Dernière récupération réussie (ou tentée) auprès d'ESPN. */
+  /** Dernière récupération réussie auprès d'ESPN. */
   fetchedAt: string | null;
+  /** Dernière tentative (réussie ou non), pour espacer les nouvelles tentatives après un échec. */
+  lastAttemptAt?: string | null;
   tables: Partial<Record<Tour, RankingTable>>;
 }
 

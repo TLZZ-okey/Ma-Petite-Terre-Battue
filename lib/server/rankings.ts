@@ -82,6 +82,48 @@ export async function fetchRankings(fetcher: Fetcher, tour: Tour): Promise<Ranki
 }
 
 /* ------------------------------------------------------------------ */
+/* Calendrier de mise à jour                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Les classements ATP et WTA sont publiés le lundi. On les récupère une fois par semaine,
+ * à partir du lundi 12:00 UTC (le temps qu'ESPN les publie).
+ */
+export const RANKINGS_REFRESH_HOUR_UTC = 12;
+
+/** Délai avant de retenter après un échec. */
+export const RANKINGS_RETRY_MS = 3600_000;
+
+/** Dernier « lundi 12:00 UTC » passé (ou égal) par rapport à `now`. */
+export function lastRankingsRelease(now: Date): Date {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), RANKINGS_REFRESH_HOUR_UTC));
+  const daysSinceMonday = (d.getUTCDay() + 6) % 7; // lundi = 0
+  d.setUTCDate(d.getUTCDate() - daysSinceMonday);
+  if (d.getTime() > now.getTime()) d.setUTCDate(d.getUTCDate() - 7);
+  return d;
+}
+
+/** Prochaine mise à jour prévue. */
+export function nextRankingsRelease(now: Date): Date {
+  const d = lastRankingsRelease(now);
+  d.setUTCDate(d.getUTCDate() + 7);
+  return d;
+}
+
+/**
+ * Faut-il interroger ESPN ? Oui si aucun classement n'a encore été récupéré, ou si le dernier
+ * date d'avant le dernier lundi — sauf si une tentative a échoué il y a moins d'une heure.
+ */
+export function rankingsDue(cache: { fetchedAt: string | null; lastAttemptAt?: string | null }, now: Date): boolean {
+  const fetched = cache.fetchedAt ? Date.parse(cache.fetchedAt) : null;
+  const outdated = fetched === null || fetched < lastRankingsRelease(now).getTime();
+  if (!outdated) return false;
+  const attempted = cache.lastAttemptAt ? Date.parse(cache.lastAttemptAt) : null;
+  const failedRecently = attempted !== null && attempted !== fetched && now.getTime() - attempted < RANKINGS_RETRY_MS;
+  return !failedRecently;
+}
+
+/* ------------------------------------------------------------------ */
 /* Rapprochement des noms                                               */
 /* ------------------------------------------------------------------ */
 
