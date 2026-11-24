@@ -63,8 +63,11 @@ L'app peut remplacer les matchs de démo par de vrais matchs :
 - Les scores ne sont demandés à SportScore que s'il reste des matchs commencés sans résultat (toutes les 3 min au plus).
 - Les matchs vus sont gardés dans `.data/matches.json` (The Odds API ne renvoie plus un match terminé). Ce fichier
   sera remplacé par la base de données.
-- **Circuits suivis** : pour l'instant uniquement l'ATP (réglage `ENABLED_TOURS` dans `lib/settings.ts`). Les
-  tournois WTA ne sont ni interrogés (aucun crédit dépensé) ni affichés. Pour les réactiver : `["ATP", "WTA"]`.
+- **Circuits et tournois suivis** (`lib/settings.ts`) : pour l'instant **uniquement Roland-Garros, tableau masculin**
+  (`ENABLED_TOURS = ["ATP"]`, `ENABLED_TOURNAMENTS = ["french_open"]`), avec les matchs de démo comme avec les vraies
+  données. Les autres tournois et la WTA ne sont ni interrogés (aucun crédit dépensé) ni affichés. Hors période du
+  tournoi (fin mai – début juin), la page Matchs l'indique dans un bandeau. Pour suivre tous les tournois :
+  `ENABLED_TOURNAMENTS = null` ; pour réactiver la WTA : `ENABLED_TOURS = ["ATP", "WTA"]`.
 - The Odds API ne couvre que les grands tournois (Grand Chelem, ATP/WTA 1000 et 500), **pas la Coupe Davis**, et ne
   fournit ni classement ni pays des joueurs.
 - Classement et nationalité viennent d'ESPN (150 premiers ATP, rafraîchis chaque lundi à partir de 12:00 UTC, jour de publication des classements), rapprochés par

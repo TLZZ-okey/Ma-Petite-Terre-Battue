@@ -1,5 +1,6 @@
 import { syncConfig } from "@/lib/server/config";
 import { nextRankingsRelease } from "@/lib/server/rankings";
+import { refresh } from "@/lib/server/sync";
 
 // Données toujours fraîches : jamais de mise en cache de la réponse.
 export const dynamic = "force-dynamic";
@@ -7,7 +8,9 @@ export const dynamic = "force-dynamic";
 /** État de la connexion aux API (diagnostic, sans jamais exposer la clé). */
 export async function GET() {
   const cfg = syncConfig();
-  const data = await cfg.store.read();
+  // Même synchronisation que /api/matches (limitée par les mêmes délais) : l'état affiché
+  // est toujours à jour, même si cette route est appelée avant /api/matches.
+  const data = cfg.apiKey ? await refresh(cfg) : await cfg.store.read();
   const matches = Object.values(data.matches);
   return Response.json({
     oddsApiConfigured: Boolean(cfg.apiKey),

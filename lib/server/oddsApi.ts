@@ -1,4 +1,4 @@
-import { isTourEnabled } from "../settings";
+import { isOddsKeyEnabled, parseOddsKey, TOURNAMENT_LABELS } from "../settings";
 import type { Match, Player, Tour, Tournament, TournamentCategory, Surface } from "../types";
 
 /**
@@ -90,12 +90,10 @@ export async function getTennisOdds(fetcher: Fetcher, apiKey: string, sportKey: 
 
 /**
  * Tournois de tennis actifs (matchs à venir), hors paris « vainqueur du tournoi »,
- * limités aux circuits suivis (voir lib/settings.ts) : aucun crédit dépensé pour les autres.
+ * limités aux circuits et tournois suivis (voir lib/settings.ts) : aucun crédit dépensé pour les autres.
  */
 export function activeTennisKeys(sports: OddsApiSport[]): string[] {
-  return sports
-    .filter((s) => s.active && !s.has_outrights && s.key.startsWith("tennis_") && isTourEnabled(tourFromKey(s.key)))
-    .map((s) => s.key);
+  return sports.filter((s) => s.active && !s.has_outrights && isOddsKeyEnabled(s.key)).map((s) => s.key);
 }
 
 function median(values: number[]): number | null {
@@ -162,8 +160,9 @@ export function tournamentFromSport(sportKey: string, sportTitle: string): Tourn
   else if (sportKey.includes("wimbledon")) surface = "gazon";
   else if (sportKey.includes("paris_masters") || sportKey.includes("finals")) surface = "indoor";
 
-  const name = sportTitle.trim() || sportKey;
-  return { id: sportKey, name, city: "", surface, category };
+  const label = TOURNAMENT_LABELS[parseOddsKey(sportKey)?.tournament ?? ""];
+  const name = label?.name ?? (sportTitle.trim() || sportKey);
+  return { id: sportKey, name, city: label?.city ?? "", surface, category };
 }
 
 export function slugify(value: string): string {

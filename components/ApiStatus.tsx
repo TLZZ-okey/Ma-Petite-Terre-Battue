@@ -1,5 +1,6 @@
 "use client";
 
+import { enabledTournamentsLabel } from "@/lib/settings";
 import { useApp } from "./AppProvider";
 import { useAsync } from "./hooks";
 
@@ -36,7 +37,8 @@ export function ApiStatusSection() {
     <section className="mx-4 mt-4 rounded-2xl border border-sand bg-white p-4 shadow-sm md:mx-0">
       <h2 className="mb-3 text-sm font-extrabold tracking-wide text-rg-dark uppercase">Données en direct</h2>
       <p className="mb-3 text-xs text-muted">
-        Programme et cotes : <strong>The Odds API</strong>. Scores : <strong>SportScore</strong>. Classements et
+        Programme et cotes : <strong>The Odds API</strong>
+        {enabledTournamentsLabel() && <> ({enabledTournamentsLabel()} uniquement)</>}. Scores : <strong>SportScore</strong>. Classements et
         nationalités : <strong>ESPN</strong> (150 premiers ATP). Les cotes sont figées au début de chaque match.
       </p>
       {error && <p className="mb-2 rounded-lg bg-live/10 px-3 py-2 text-xs font-semibold text-live">{error}</p>}
@@ -117,8 +119,10 @@ export function ApiNotice() {
   if (!data.oddsApiConfigured) {
     message = "Clé The Odds API manquante : ajoute ODDS_API_KEY dans .env.local puis redémarre le serveur.";
   } else if (data.lastOddsSync && data.activeTournaments.length === 0) {
-    message =
-      "Aucun tournoi de tennis n'est couvert par The Odds API en ce moment (intersaison). Les matchs réapparaîtront dès la reprise des grands tournois.";
+    const followed = enabledTournamentsLabel();
+    message = followed
+      ? `Aucun match de ${followed} pour l'instant : les matchs et leurs cotes apparaîtront quelques jours avant le début du tournoi.`
+      : "Aucun tournoi de tennis n'est couvert par The Odds API en ce moment (intersaison). Les matchs réapparaîtront dès la reprise des grands tournois.";
   }
   if (!message) return null;
   return (
