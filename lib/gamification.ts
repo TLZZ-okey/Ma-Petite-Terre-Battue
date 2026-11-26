@@ -137,7 +137,7 @@ export function computeAchievements(predictions: Prediction[], matches: Map<stri
     badge("bullseye", "🎯", "Dans le mille", "Trouver un score exact", perfect, 1),
     badge("flair", "🦊", "Flair d'outsider", `Trouver un vainqueur à une cote d'au moins ${UNDERDOG_ODDS.toLocaleString("fr-FR")}`, underdog, 1),
     badge("fire", "🔥", "En feu", "Enchaîner 3 bons pronos", best, 3),
-    badge("regular", "📅", "Assidu", "Faire 10 pronos", total, 10),
+    badge("regular", "💪", "Assidu", "Faire 10 pronos", total, 10),
     badge("sniper", "🏹", "Sniper", "Trouver 3 scores exacts", perfect, 3),
     badge("pro", "🏆", "Pro du court", "Trouver 10 vainqueurs", won, 10),
   ];

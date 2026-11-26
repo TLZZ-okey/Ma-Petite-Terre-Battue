@@ -161,12 +161,21 @@ tests/                  tests Vitest
 
 ## Aperçu
 
-**Sur PC**
+Captures du thème « jeu » avec les matchs de démo : une partie entre trois joueurs (Suzanne, Gaël et Amélie) après
+quatre journées du tableau de Roland-Garros.
 
-![](docs/screenshots/pc-matchs.png)
+### Sur ordinateur
 
-**Sur mobile**
+| Matchs | Mes pronos |
+| --- | --- |
+| ![Page Matchs : finale Alcaraz – Djokovic avec un prono validé, carte « Ma partie » avec niveau, XP et défi du jour](docs/screenshots/pc-matchs.png) | ![Mes pronos : statistiques et matchs terminés avec le bandeau « Bien joué ! +37 pts »](docs/screenshots/pc-pronos.png) |
+| **Classement** | **Profil** |
+| ![Classement : podium à marches avec couronne et médailles, tableau avec le niveau de chaque joueur](docs/screenshots/pc-classement.png) | ![Profil : carte joueur niveau 2 « Juge de ligne », séries et collection de badges](docs/screenshots/pc-profil.png) |
 
-| Connexion | Matchs | Mes pronos | Classement |
-| --- | --- | --- | --- |
-| ![](docs/screenshots/connexion.png) | ![](docs/screenshots/matchs.png) | ![](docs/screenshots/pronos.png) | ![](docs/screenshots/classement.png) |
+![Connexion : « Joue le match avant le match ! » sur un court de terre battue](docs/screenshots/pc-connexion.png)
+
+### Sur mobile
+
+| Connexion | Matchs | Mes pronos | Classement | Profil |
+| --- | --- | --- | --- | --- |
+| ![Connexion sur mobile](docs/screenshots/mobile-connexion.png) | ![Carte de match « VS » avec le gain en balle et les cases de sets](docs/screenshots/mobile-matchs.png) | ![Match terminé avec le résultat du prono](docs/screenshots/mobile-pronos.png) | ![Podium sur mobile](docs/screenshots/mobile-classement.png) | ![Carte joueur et statistiques](docs/screenshots/mobile-profil.png) |
